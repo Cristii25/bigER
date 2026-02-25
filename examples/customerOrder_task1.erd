@@ -1,0 +1,17 @@
+erdiagram CustomerOrder
+
+entity Customer {
+  id: int key
+  name: string
+}
+
+entity Order {
+  order_number: int key
+  price: double
+}
+
+relationship Places {
+  Customer[1] -> Order[N]
+  date: string
+  quantity: int
+}

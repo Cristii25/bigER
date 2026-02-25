@@ -82,23 +82,48 @@ class ERDiagramGenerator implements IDiagramGenerator {
 	}
 
 	def RelationshipNode relationshipNodes(Relationship relationship, extension Context context) {
-		val relationshipId = idCache.uniqueId(relationship, relationship.name)
-		return (new RelationshipNode [
-			id = relationshipId
-			type = DiagramTypes.NODE_RELATIONSHIP
-			weak = relationship.weak ? true : false
-			layout = 'vbox'
-			layoutOptions = new LayoutOptions [
-				paddingFactor = 2.0
-			]
-			children = #[
-				(new SLabel [
-					id = idCache.uniqueId(relationshipId + '.label')
-					text = relationship.name
-					type = 'label:relationship'
-				]).trace(relationship, RELATIONSHIP__NAME, -1)
-			]
-		]).traceAndMark(relationship, context)
+    	val relationshipId = idCache.uniqueId(relationship, relationship.name)
+
+    	val node = new RelationshipNode => [
+        	id = relationshipId
+        	type = DiagramTypes.NODE_RELATIONSHIP
+        	weak = relationship.weak ? true : false
+        	layout = 'vbox'
+        	layoutOptions = new LayoutOptions [
+            	paddingFactor = 2.0
+            	HAlign = 'center'
+            	VGap = 6.0
+        	]
+        	children = new ArrayList<SModelElement>
+    	]
+
+    	node.children.add(
+        	(new SLabel [
+            	id = idCache.uniqueId(relationshipId + '.label')
+            	text = relationship.name 
+            	type = 'label:relationship'
+        	]).trace(relationship, RELATIONSHIP__NAME, -1)
+    	)
+
+    	if (relationship.attributes !== null && !relationship.attributes.empty) {
+        	var i = 0
+        	for (a : relationship.attributes) {
+            	val attrId = idCache.uniqueId(relationshipId + ".attr." + i)
+            	val attrText = a.name + ' ' + attributeDatatypeString(a)
+
+            	node.children.add(
+                	(new SLabel [
+                    	id = attrId
+                    	text = attrText
+                    	type = DiagramTypes.LABEL_TEXT
+                	]).trace(a, ATTRIBUTE__NAME, -1)
+            	)
+
+            	i = i + 1
+        	}
+    	}
+
+    	return node.traceAndMark(relationship, context)
 	}
 	
 	def List<SModelElement> addRelationEdges(Relationship rel, extension Context context) {
