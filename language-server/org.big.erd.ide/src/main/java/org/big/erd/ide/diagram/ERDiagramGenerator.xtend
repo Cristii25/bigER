@@ -11,6 +11,8 @@ import org.big.erd.entityRelationship.RelationEntity
 import org.big.erd.entityRelationship.Model
 import org.big.erd.ide.diagram.EntityNode
 import org.big.erd.ide.diagram.NotationEdge
+import org.big.erd.ide.diagram.RelationshipNode
+import org.eclipse.sprotty.Dimension
 import org.big.erd.ide.diagram.ERModel
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.sprotty.SEdge
@@ -81,49 +83,159 @@ class ERDiagramGenerator implements IDiagramGenerator {
 		return graph;
 	}
 
+	// Calcula cuánto ancho útil céntrico tiene el rombo a cierta altura (dy)
+	// Afecta al tamaño final del ROMBO para que el texto no se salga
+	def double widthFactor(double dy, double diamondH) {
+		val f = 1.0 - (2.0 * Math.abs(dy) / diamondH)
+		return Math.max(0.35, f)
+	}
+
+	// Estima el ancho necesario para una línea de texto
+	// Se usa para calcular el ancho mínimo del ROMBO
+	def double reqLineW(String s, double charW, double padX) {
+		val int l = if (s === null) 0 else s.length
+		return (l as double) * charW + 2.0 * padX
+	}
+
 	def RelationshipNode relationshipNodes(Relationship relationship, extension Context context) {
-    	val relationshipId = idCache.uniqueId(relationship, relationship.name)
 
-    	val node = new RelationshipNode => [
-        	id = relationshipId
-        	type = DiagramTypes.NODE_RELATIONSHIP
-        	weak = relationship.weak ? true : false
-        	layout = 'vbox'
-        	layoutOptions = new LayoutOptions [
-            	paddingFactor = 2.0
-            	HAlign = 'center'
-            	VGap = 6.0
-        	]
-        	children = new ArrayList<SModelElement>
-    	]
+		val relationshipId = idCache.uniqueId(relationship, relationship.name)
 
-    	node.children.add(
-        	(new SLabel [
-            	id = idCache.uniqueId(relationshipId + '.label')
-            	text = relationship.name 
-            	type = 'label:relationship'
-        	]).trace(relationship, RELATIONSHIP__NAME, -1)
-    	)
+		// ---- Textos ----
+		// Título del rombo
+		val headerText = relationship.name ?: ""
 
-    	if (relationship.attributes !== null && !relationship.attributes.empty) {
-        	var i = 0
-        	for (a : relationship.attributes) {
-            	val attrId = idCache.uniqueId(relationshipId + ".attr." + i)
-            	val attrText = a.name + ' ' + attributeDatatypeString(a)
+		// Líneas de atributos (texto que aparecerá bajo el separador)
+		val attrLines = relationship.attributes?.map[a |
+			a.name + " " + attributeDatatypeString(a)
+		] ?: newArrayList
 
-            	node.children.add(
-                	(new SLabel [
-                    	id = attrId
-                    	text = attrText
-                    	type = DiagramTypes.LABEL_TEXT
-                	]).trace(a, ATTRIBUTE__NAME, -1)
-            	)
+		val hasAttrs = !attrLines.empty
 
-            	i = i + 1
-        	}
-    	}
+		// ---- Métricas visuales ----
+		val double charW = 7.0
+		val double padX = 24.0
+		val double padTipY = 18.0
 
-    	return node.traceAndMark(relationship, context)
+		val double titleFont = 18.0
+		val double gapTitleToSep = 10.0     // espacio título -> separador
+		val double gapSepToAttrs = 12.0     // espacio separador -> atributos
+		val double attrLineH = 18.0         // separación entre atributos
+
+		// Altura del contenido interno (título + separador + atributos)
+		// Afecta a la altura final del ROMBO
+		val double blockH =
+			titleFont +
+			(if (hasAttrs) (gapTitleToSep + gapSepToAttrs + attrLines.size * attrLineH) else 0.0)
+
+		// Altura del rombo según contenido
+		val double diamondH = Math.max(90.0, blockH + 2.0 * padTipY)
+		val double cy = diamondH / 2.0
+
+		// Posiciones relativas del bloque interno
+		val double titleYRel = titleFont / 2.0         // centro del título
+		val double sepYRel = titleFont + gapTitleToSep // posición del separador
+
+		// Calcula el rango vertical del contenido para centrarlo en el rombo
+		val double firstRel = titleYRel
+		val double lastRel = if (hasAttrs)
+			(sepYRel + gapSepToAttrs + attrLineH / 2.0 + (attrLines.size - 1) * attrLineH)
+		else
+			titleYRel
+
+		// Desplazamiento para centrar el bloque (título + atributos) en el rombo
+		val double shiftY = cy - ((firstRel + lastRel) / 2.0)
+
+		val double titleY = titleYRel + shiftY
+
+		// ---- Cálculo del ancho mínimo del rombo ----
+		var double requiredW = 120.0
+
+		// Título influye en el ancho necesario del rombo
+		val double dyTitle = titleY - cy
+		val double needTitleW = reqLineW(headerText, charW, padX) / widthFactor(dyTitle, diamondH)
+		requiredW = Math.max(requiredW, needTitleW)
+
+		// Atributos también influyen en el ancho del rombo
+		if (hasAttrs) {
+			val double attrsStartY = (sepYRel + gapSepToAttrs + attrLineH / 2.0) + shiftY
+
+			var int i = 0
+			for (line : attrLines) {
+				val double y = attrsStartY + i * attrLineH
+				val double dy = y - cy
+				val double needW = reqLineW(line, charW, padX) / widthFactor(dy, diamondH)
+				requiredW = Math.max(requiredW, needW)
+				i = i + 1
+			}
+		}
+
+		// Anchura final del ROMBO
+		val double diamondW = Math.max(120.0, requiredW + 6.0)
+
+		// ---- Creación del nodo del rombo ----
+		val node = new RelationshipNode => [
+			id = relationshipId
+			type = DiagramTypes.NODE_RELATIONSHIP
+			weak = relationship.weak ? true : false
+
+			size = new Dimension(diamondW, diamondH)
+
+			layout = 'vbox'
+			layoutOptions = new LayoutOptions [
+				minWidth  = diamondW
+				minHeight = diamondH
+				HAlign = 'center'
+				VAlign = 'center'
+				VGap = 0.0
+				paddingFactor = 0.0
+			]
+
+			children = new ArrayList<SModelElement>
+		]
+
+		// Compartimento del TÍTULO (nombre de la relación)
+		node.children.add(new SCompartment => [
+			id = idCache.uniqueId(relationshipId + '.header-comp')
+			type = DiagramTypes.COMP_ENTITY_HEADER
+			layout = 'none'
+			children = #[
+				(new SLabel [
+					id = idCache.uniqueId(relationshipId + '.label')
+					type = DiagramTypes.ENTITY_LABEL
+					text = relationship.name
+				]).trace(relationship, RELATIONSHIP__NAME, -1)
+			]
+		])
+
+		// Compartimento de ATRIBUTOS
+		val comp = new SCompartment => [
+			id = relationshipId + '.attributes'
+			type = DiagramTypes.COMP_ATTRIBUTES
+			layout = 'none'
+			children = new ArrayList<SModelElement>
+		]
+
+		if (relationship.attributes !== null && !relationship.attributes.empty) {
+			var int j = 0
+			for (a : relationship.attributes) {
+				val attrId = idCache.uniqueId(relationshipId + ".attr." + j)
+				val attrText = a.name + " " + attributeDatatypeString(a)
+
+				comp.children.add(
+					(new SLabel [
+						id = attrId
+						text = attrText
+						type = DiagramTypes.LABEL_TEXT
+					]).trace(a, ATTRIBUTE__NAME, -1)
+				)
+				j = j + 1
+			}
+		}
+
+		node.children.add(comp)
+
+		return node.traceAndMark(relationship, context)
 	}
 	
 	def List<SModelElement> addRelationEdges(Relationship rel, extension Context context) {

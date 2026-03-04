@@ -83,15 +83,6 @@ class PopupModelFactory implements IPopupModelFactory {
 							«getIssueRow(issueMarker)»
 						«ENDIF»
 						«getHeader(semanticElement)»
-						«IF semanticElement instanceof Relationship»
-							«IF !semanticElement.attributes.empty»
-								«FOR attribute: semanticElement.attributes»
-									<div class="popup-header">
-										<div class="popup-attribute-info">«attribute.name» : «attribute.datatype.transformDataType»</div>
-									</div>
-								«ENDFOR»
-							«ENDIF»
-						«ENDIF»
 						</div>
 					'''
 				],

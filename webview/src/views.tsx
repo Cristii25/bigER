@@ -1,9 +1,9 @@
 /** @jsx svg */
 import { VNode } from "snabbdom";
-import { RenderingContext, svg, RectangularNodeView, SEdge, PolylineEdgeView, // eslint-disable-line @typescript-eslint/no-unused-vars
-         SPort, SGraphView, IViewArgs, Hoverable, Selectable, DiamondNodeView, Diamond, SNode, PreRenderedView } from 'sprotty';
-import { injectable} from 'inversify';
-import { toDegrees, Point } from 'sprotty-protocol';
+import { RenderingContext, svg, RectangularNodeView, SEdge, PolylineEdgeView, SGraphView, 
+         IViewArgs, Hoverable, Selectable, PreRenderedView } from "sprotty";
+import { injectable } from "inversify";
+import { toDegrees, Point } from "sprotty-protocol";
 import { EntityNode, ERModel, NotationEdge, PopupButton, RelationshipNode } from "./model";
 import { DiagramTypes, RelationshipTypes, UITypes } from "./utils";
 
@@ -56,29 +56,153 @@ export class EntityNodeView extends RectangularNodeView {
 }
 
 @injectable()
-export class RelationshipNodeView extends DiamondNodeView {
-    override render(node: Readonly<RelationshipNode & Hoverable & Selectable>, context: RenderingContext, args?: IViewArgs): VNode | undefined {
-        if (!this.isVisible(node, context)) {
-            return undefined;
-        }
-        const diamond = new Diamond({ height: Math.max(node.size.height, 0), width: Math.max(node.size.width, 0), x: 0, y: 0 });
-        const diamondWeak = new Diamond({ height: Math.max(node.size.height + 10, 0), width: Math.max(node.size.width + 20, 0), x: -10, y: -5 });
-        const points = `${svgStr(diamond.topPoint)} ${svgStr(diamond.rightPoint)} ${svgStr(diamond.bottomPoint)} ${svgStr(diamond.leftPoint)}`;
-        const pointsWeak = `${svgStr(diamondWeak.topPoint)} ${svgStr(diamondWeak.rightPoint)} ${svgStr(diamondWeak.bottomPoint)} ${svgStr(diamondWeak.leftPoint)}`;
-        return <g>
-            {(node.weak === true) ?
-                <polygon class-border-weak points={pointsWeak} /> :
-                ""}
-            <polygon class-sprotty-node={node instanceof SNode} class-sprotty-port={node instanceof SPort}
-                  class-mouseover={node.hoverFeedback} class-selected={node.selected}
-                  points={points} />
-            {context.renderChildren(node)}
-        </g>;
-    }
-}
+export class RelationshipNodeView extends RectangularNodeView {
 
-function svgStr(point: Point) {
-    return `${point.x},${point.y}`;
+  override render(
+    node: Readonly<RelationshipNode & Hoverable & Selectable>,
+    context: RenderingContext
+  ): VNode | undefined {
+
+    // Si el nodo no es visible, no se renderiza nada
+    if (!this.isVisible(node, context)) return undefined;
+
+    // Tamaño del nodo (viene calculado desde el .xtend)
+    const w = Math.max(node.bounds.width, 0);
+    const h = Math.max(node.bounds.height, 0);
+
+    // Centro del nodo (se usa para dibujar el rombo y centrar textos)
+    const cx = w / 2;
+    const cy = h / 2;
+
+    // ---- ROMBO ----
+    // Puntos del polígono en forma de rombo (arriba, derecha, abajo, izquierda)
+    const points = `${cx},0 ${w},${cy} ${cx},${h} 0,${cy}`;
+
+    // ---- TEXTOS DESDE EL MODELO ----
+    // Título (nombre de la relación): node.children[0]
+    const headerComp: any = node.children?.[0];
+    const headerLabel: any = headerComp?.children?.[0];
+    const title: string = headerLabel?.text ?? "";
+
+    // Atributos: node.children[1] (cada hijo es una línea)
+    const attrsComp: any = node.children?.[1];
+    const attrLabels: any[] = (attrsComp?.children ?? []);
+    const attrLines: string[] = attrLabels
+      .map(l => l?.text)
+      .filter((t: any) => typeof t === "string" && t.trim().length > 0);
+
+    // Si hay atributos, se dibuja separador y lista de líneas
+    const hasAttrs = attrLines.length > 0;
+
+    // ---- MÉTRICAS VISUALES (espaciados) ----
+    // Afecta a TÍTULO / ATRIBUTOS / SEPARADOR (posiciones y separación)
+    const titleFont = 18;
+    const attrFont = 14;
+
+    const gapTitleToSep = 14;  // espacio TÍTULO -> SEPARADOR
+    const gapSepToAttrs = 8;   // espacio SEPARADOR -> ATRIBUTOS (más pequeño = atributos más arriba)
+    const attrLineH = 22;      // separación entre líneas de ATRIBUTOS
+
+    const innerPadX = 10;      // margen para recortar el SEPARADOR (que no toque el borde del rombo)
+
+    // Devuelve la mitad del ancho disponible del rombo a una Y absoluta
+    // Se usa para RECORTAR el SEPARADOR según el “estrechamiento” del rombo
+    const halfWidthAtY = (yAbs: number) => {
+      if (yAbs <= cy) return (w * yAbs) / h;
+      return (w * (h - yAbs)) / h;
+    };
+
+    // ---- CENTRADO DEL BLOQUE ----
+    // blockH = altura del contenido interno (título + separador + atributos)
+    // top = desplazamiento para centrar ese contenido dentro del rombo
+    const blockH =
+      titleFont +
+      (hasAttrs ? (gapTitleToSep + gapSepToAttrs + attrLines.length * attrLineH) : 0);
+
+    const top = (h - blockH) / 2;
+
+    // ---- POSICIONES RELATIVAS DENTRO DEL BLOQUE ----
+    // SOLO movemos el TÍTULO con offset; separador y atributos quedan fijos
+    const titleYRelBase = titleFont / 2;
+    const titleOffsetY = 6;                 // mueve SOLO el TÍTULO (más = más abajo)
+    const titleYRel = titleYRelBase + titleOffsetY;
+
+    const sepYRel = titleFont + gapTitleToSep;  // Y del SEPARADOR (no depende del offset del título)
+    const attrsStartYRel = titleFont + gapTitleToSep + gapSepToAttrs + attrLineH / 2; // inicio ATRIBUTOS
+
+    // ---- SEPARADOR (línea) ----
+    // Se recorta según el ancho disponible del rombo en esa altura
+    const sepYAbs = top + sepYRel;
+    const halfSep = Math.max(0, halfWidthAtY(sepYAbs) - innerPadX);
+    const sepPath = `M ${cx - halfSep},${sepYRel} L ${cx + halfSep},${sepYRel}`;
+
+    // Atributos comunes de texto: centrado horizontal y vertical
+    const mkTextAttrs = (x: number, y: number) => ({
+      x: Number(x),
+      y: Number(y),
+      "text-anchor": "middle",
+      "dominant-baseline": "middle"
+    }) as any;
+
+    return (
+      <g class-relationship={true}>
+
+        {/* ROMBO */}
+        <polygon
+          class-sprotty-node={true}
+          class-mouseover={node.hoverFeedback}
+          class-selected={node.selected}
+          points={points}
+        />
+
+        {/* Contenido centrado dentro del rombo */}
+        <g transform={`translate(0,${top})`}>
+
+          {/* TÍTULO (se puede ajustar con titleOffsetY) */}
+          <text
+            key={`${node.id}-title`}
+            attrs={mkTextAttrs(cx, titleYRel)}
+            style={{
+              pointerEvents: "none",
+              fontSize: `${titleFont}px`,
+              fontWeight: "bold"
+            }}
+          >
+            {title}
+          </text>
+
+          {/* SEPARADOR (se dibuja solo si hay atributos) */}
+          {hasAttrs && (
+            <path
+              key={`${node.id}-sep`}
+              class-comp-separator={true}
+              d={sepPath}
+              style={{ pointerEvents: "none" }}
+            />
+          )}
+
+          {/* ATRIBUTOS (cada línea se coloca con attrsStartYRel + i*attrLineH) */}
+          {hasAttrs && attrLines.map((line, i) => {
+            const yRel = Number(attrsStartYRel + i * attrLineH);
+
+            return (
+              <text
+                key={`${node.id}-attr-${i}`}
+                attrs={mkTextAttrs(cx, yRel)}
+                style={{
+                  pointerEvents: "none",
+                  fontSize: `${attrFont}px`
+                }}
+              >
+                {line}
+              </text>
+            );
+          })}
+
+        </g>
+      </g>
+    );
+  }
 }
 
 @injectable()

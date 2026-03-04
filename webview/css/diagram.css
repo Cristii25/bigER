@@ -41,8 +41,10 @@ text {
     fill: var(--vscode-list-hoverBackground);*/
 }
 
-.relationship > .sprotty-node {
-    fill: white;
+.comp-separator {
+  stroke-width: 1;
+  stroke: var(--vscode-list-deemphasizedForeground);
+  fill: none;
 }
 
 .sprotty-edge.partial {
