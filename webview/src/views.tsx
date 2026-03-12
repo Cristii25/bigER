@@ -103,7 +103,7 @@ export class RelationshipNodeView extends RectangularNodeView {
     const gapSepToAttrs = 8;   // espacio SEPARADOR -> ATRIBUTOS (más pequeño = atributos más arriba)
     const attrLineH = 22;      // separación entre líneas de ATRIBUTOS
 
-    const innerPadX = 10;      // margen para recortar el SEPARADOR (que no toque el borde del rombo)
+    const innerPadX = 0;      // margen para recortar el SEPARADOR (que no toque el borde del rombo)
 
     // Devuelve la mitad del ancho disponible del rombo a una Y absoluta
     // Se usa para RECORTAR el SEPARADOR según el “estrechamiento” del rombo

@@ -42,7 +42,7 @@ text {
 }
 
 .comp-separator {
-  stroke-width: 1;
+  stroke-width: 2;
   stroke: var(--vscode-list-deemphasizedForeground);
   fill: none;
 }
