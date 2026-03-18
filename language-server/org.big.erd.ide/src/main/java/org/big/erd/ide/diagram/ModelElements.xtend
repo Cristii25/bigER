@@ -31,6 +31,7 @@ class EntityNode extends SNode {
 
 @Accessors
 class RelationshipNode extends SNode {
+	boolean expanded
 	boolean weak
 
 	new() { }

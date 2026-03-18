@@ -84,6 +84,9 @@ export class RelationshipNodeView extends RectangularNodeView {
     const headerLabel: any = headerComp?.children?.[0];
     const title: string = headerLabel?.text ?? "";
 
+    // Botón de expandir/colapsar del header
+    const expandButton: any = headerComp?.children?.[1];
+
     // Atributos: node.children[1] (cada hijo es una línea)
     const attrsComp: any = node.children?.[1];
     const attrLabels: any[] = (attrsComp?.children ?? []);
@@ -171,8 +174,15 @@ export class RelationshipNodeView extends RectangularNodeView {
             {title}
           </text>
 
-          {/* SEPARADOR (se dibuja solo si hay atributos) */}
-          {hasAttrs && (
+        {/* Flecha de expandir/colapsar colocada junto al título */}
+        {expandButton && (
+            <g transform={`translate(${cx + 30}, ${titleYRel - 8})`}>
+                {context.renderElement(expandButton)}
+            </g>
+        )}
+
+          {/* SEPARADOR (solo visible si la relación está expandida y tiene atributos) */}
+          {hasAttrs && node.expanded && (
             <path
               key={`${node.id}-sep`}
               class-comp-separator={true}
@@ -182,7 +192,8 @@ export class RelationshipNodeView extends RectangularNodeView {
           )}
 
           {/* ATRIBUTOS (cada línea se coloca con attrsStartYRel + i*attrLineH) */}
-          {hasAttrs && attrLines.map((line, i) => {
+          {/* (solo visibles si la relación está expandida) */}
+          {hasAttrs && node.expanded && attrLines.map((line, i) => {
             const yRel = Number(attrsStartYRel + i * attrLineH);
 
             return (

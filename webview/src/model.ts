@@ -13,6 +13,7 @@ export class EntityNode extends RectangularNode {
 }
 
 export class RelationshipNode extends DiamondNode {
+    expanded: boolean;
     weak: boolean;
 }
 

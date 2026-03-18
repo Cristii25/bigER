@@ -101,14 +101,20 @@ class ERDiagramGenerator implements IDiagramGenerator {
 
 		val relationshipId = idCache.uniqueId(relationship, relationship.name)
 
+		// Estado expandido/colapsado de la relación
+		val isExpanded = state.expandedElements.contains(relationshipId) || state.currentModel.type == 'NONE'
+
 		// ---- Textos ----
 		// Título del rombo
 		val headerText = relationship.name ?: ""
 
-		// Líneas de atributos (texto que aparecerá bajo el separador)
-		val attrLines = relationship.attributes?.map[a |
-			a.name + " " + attributeDatatypeString(a)
-		] ?: newArrayList
+		// Líneas de atributos solo si la relación está expandida
+		val attrLines = if (isExpanded)
+			relationship.attributes?.map[a |
+				a.name + " " + attributeDatatypeString(a)
+			] ?: newArrayList
+		else
+			newArrayList
 
 		val hasAttrs = !attrLines.empty
 
@@ -194,46 +200,56 @@ class ERDiagramGenerator implements IDiagramGenerator {
 			children = new ArrayList<SModelElement>
 		]
 
-		// Compartimento del TÍTULO (nombre de la relación)
+		// Compartimento del TÍTULO con botón de expandir/colapsar
 		node.children.add(new SCompartment => [
 			id = idCache.uniqueId(relationshipId + '.header-comp')
 			type = DiagramTypes.COMP_ENTITY_HEADER
-			layout = 'none'
+			layout = 'hbox'
 			children = #[
 				(new SLabel [
 					id = idCache.uniqueId(relationshipId + '.label')
 					type = DiagramTypes.ENTITY_LABEL
 					text = relationship.name
-				]).trace(relationship, RELATIONSHIP__NAME, -1)
+				]).trace(relationship, RELATIONSHIP__NAME, -1),
+				(new SButton [
+					id = idCache.uniqueId(relationshipId + '.button')
+					type = DiagramTypes.BUTTON_EXPAND
+				])
 			]
 		])
 
-		// Compartimento de ATRIBUTOS
-		val comp = new SCompartment => [
-			id = relationshipId + '.attributes'
-			type = DiagramTypes.COMP_ATTRIBUTES
-			layout = 'none'
-			children = new ArrayList<SModelElement>
-		]
+		// Compartimento de ATRIBUTOS solo se añaden si la relación está expandida
+		if (isExpanded) {
+			val comp = new SCompartment => [
+				id = relationshipId + '.attributes'
+				type = DiagramTypes.COMP_ATTRIBUTES
+				layout = 'none'
+				children = new ArrayList<SModelElement>
+			]
 
-		if (relationship.attributes !== null && !relationship.attributes.empty) {
-			var int j = 0
-			for (a : relationship.attributes) {
-				val attrId = idCache.uniqueId(relationshipId + ".attr." + j)
-				val attrText = a.name + " " + attributeDatatypeString(a)
+			if (relationship.attributes !== null && !relationship.attributes.empty) {
+				var int j = 0
+				for (a : relationship.attributes) {
+					val attrId = idCache.uniqueId(relationshipId + ".attr." + j)
+					val attrText = a.name + " " + attributeDatatypeString(a)
 
-				comp.children.add(
-					(new SLabel [
-						id = attrId
-						text = attrText
-						type = DiagramTypes.LABEL_TEXT
-					]).trace(a, ATTRIBUTE__NAME, -1)
-				)
-				j = j + 1
+					comp.children.add(
+						(new SLabel [
+							id = attrId
+							text = attrText
+							type = DiagramTypes.LABEL_TEXT
+						]).trace(a, ATTRIBUTE__NAME, -1)
+					)
+					j = j + 1
+				}
 			}
-		}
 
-		node.children.add(comp)
+			node.children.add(comp)
+			state.expandedElements.add(relationshipId)
+			node.expanded = true
+		} else {
+			node.expanded = false
+		}
 
 		return node.traceAndMark(relationship, context)
 	}

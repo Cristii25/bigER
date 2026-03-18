@@ -43,7 +43,7 @@ const DiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     configureModelElement(context, 'graph', ERModel, ERModelView);
     // Nodes
     configureModelElement(context, 'node:entity', EntityNode, EntityNodeView, { enable: [expandFeature] });
-    configureModelElement(context, 'node:relationship', RelationshipNode, RelationshipNodeView);
+    configureModelElement(context, 'node:relationship', RelationshipNode, RelationshipNodeView, { enable: [expandFeature] });
     // Compartments
     configureModelElement(context, 'comp:entity-header', SCompartment, SCompartmentView);
     configureModelElement(context, 'comp:attributes', SCompartment, SCompartmentView);
