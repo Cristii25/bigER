@@ -1,0 +1,37 @@
+erdiagram CustomerOrderValidation
+
+entity Customer {
+  id: int key
+  name: string
+}
+
+entity Order {
+  order_number: int key
+  price: double
+}
+
+entity Product {
+  id: int key
+  name: string
+}
+
+// Caso 1: relación SIN atributos
+relationship Views {
+  Customer[1] -> Product[N]
+}
+
+// Caso 2: relación CON atributos
+relationship Places {
+  Customer[1] -> Order[N]
+  date: string
+  quantity: int
+}
+
+// Caso 3: relación con MÁS atributos
+relationship Tracks {
+  Customer[1] -> Order[N]
+  timestamp: string
+  location: string
+  device: string
+  status: string
+}
