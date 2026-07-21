@@ -1,50 +1,120 @@
 svg {
-    outline: none; /* To remove border when clicking into diagram */
+    outline: none;
 }
+
+/*
+Colores base utilizados cuando VS Code no proporciona una categoría de tema específica.
+*/
+body {
+    --biger-relationship-edge-color: #c4cbd3;
+
+    --biger-inheritance-edge-color:
+        var(--vscode-editorActiveLineNumber-foreground);
+
+    --biger-node-hover-color: #ff8a3d;
+    --biger-node-selected-color: #00c2ff;
+}
+
+/* Colores de las aristas en los temas claros de VS Code */
+body.vscode-light {
+    --biger-relationship-edge-color:
+        color-mix(
+            in srgb,
+            var(--vscode-editorActiveLineNumber-foreground) 6.67%,
+            var(--vscode-focusBorder) 93.33%
+        );
+
+    --biger-inheritance-edge-color:
+        color-mix(
+            in srgb,
+            var(--vscode-editorActiveLineNumber-foreground) 95%,
+            var(--vscode-focusBorder) 5%
+        );
+
+    --biger-node-hover-color: darkorchid;
+    --biger-node-selected-color: darkgreen;
+}
+
+/* Colores de las aristas en los temas oscuros de VS Code */
+body.vscode-dark {
+    --biger-relationship-edge-color:
+        color-mix(
+            in srgb,
+            var(--vscode-editorActiveLineNumber-foreground) 95%,
+            var(--vscode-focusBorder) 5%
+        );
+
+    --biger-inheritance-edge-color:
+        color-mix(
+            in srgb,
+            var(--vscode-editorActiveLineNumber-foreground) 9.09%,
+            var(--vscode-focusBorder) 90.91%
+        );
+
+    --biger-node-hover-color: red;
+    --biger-node-selected-color: #ffd700;
+}
+
+/* Colores con mayor contraste para los temas de alto contraste */
+body.vscode-high-contrast {
+    --biger-relationship-edge-color:
+        color-mix(
+            in srgb,
+            var(--vscode-foreground) 95%,
+            var(--vscode-focusBorder) 5%
+        );
+
+    --biger-inheritance-edge-color:
+        color-mix(
+            in srgb,
+            var(--vscode-editorActiveLineNumber-foreground) 5%,
+            var(--vscode-focusBorder) 95%
+        );
+
+    --biger-node-hover-color: rgb(233 33 255);
+    --biger-node-selected-color: #5b9d7d;
+}
+
 .sprotty {
     user-select: none;
 }
+
 .sprotty-hidden {
-    width: 0px;
-    height: 0px;
+    width: 0;
+    height: 0;
 }
 
 .sprotty-graph.selected {
     border: none;
 }
-  
+
 text {
     stroke-width: 0;
     fill: #000;
     font-family: sans-serif;
     font-size: var(--vscode-editor-font-size);
-
 }
 
 .sprotty-node {
     stroke-width: 1;
-    fill: rgb(219,218,235);
-    /*fill: var(--vscode-list-inactiveSelectionBackground);*/
-    /*stroke: rgb(27, 27, 27);*/
+    fill: rgb(219, 218, 235);
     stroke: var(--vscode-list-deemphasizedForeground);
 }
+
 .sprotty-node.selected {
     stroke-width: 5;
-    stroke: yellow;
-    /*fill: var(--vscode-list-activeSelectionBackground);*/
-
+    stroke: var(--biger-node-selected-color);
 }
+
 .sprotty-node.mouseover:not(.selected) {
-    stroke-width: 3;
-    stroke: orange;
-    /*stroke: var(--vscode-list-activeSelectionForeground);
-    fill: var(--vscode-list-hoverBackground);*/
+    stroke-width: 5;
+    stroke: var(--biger-node-hover-color);
 }
 
 .comp-separator {
-  stroke-width: 2;
-  stroke: var(--vscode-list-deemphasizedForeground);
-  fill: none;
+    stroke-width: 1;
+    stroke: var(--vscode-list-deemphasizedForeground);
+    fill: none;
 }
 
 .sprotty-edge.partial {
@@ -55,15 +125,6 @@ text {
 .header {
     font-size: 18px;
     font-weight: bold;
-}
-.comp-separator {
-    stroke-width: 1;
-    stroke: var(--vscode-list-deemphasizedForeground);;
-}
-
-.sprotty-edge.inheritance {
-    stroke-width: 3;
-    stroke:rgb(255, 255, 255);
 }
 
 .relationship {
@@ -97,46 +158,41 @@ text {
     font-style: italic;
     text-decoration: underline;
 }
+
 .partial-key {
     font-style: italic;
     text-decoration: underline;
     fill: gray;
 }
+
 .derived {
     fill: gray;
 }
 
-.right.sprotty-label {
-    fill: white;
-}
-
-.top.sprotty-label {
-    fill: var(--vscode-foreground);
-}
-
-.top-left.sprotty-label {
-    fill: var(--vscode-foreground);
-}
-
-.top-right.sprotty-label {
-    fill: var(--vscode-foreground);
-}
-
-.bottom.sprotty-label {
-    fill: var(--vscode-foreground);
-}
-
-.bottom-left.sprotty-label {
-    fill: var(--vscode-foreground);
-}
-
+/* Etiquetas posicionadas de Sprotty */
+.right.sprotty-label,
+.top.sprotty-label,
+.top-left.sprotty-label,
+.top-right.sprotty-label,
+.bottom.sprotty-label,
+.bottom-left.sprotty-label,
 .bottom-right.sprotty-label {
     fill: var(--vscode-foreground);
 }
 
 .sprotty-edge {
     fill: none;
-    stroke: var(--vscode-editorActiveLineNumber-foreground);
+    stroke-width: 3;
+}
+
+/* Aplica el color específico a las aristas de relaciones normales */
+.sprotty-edge.relationship-edge {
+    stroke: var(--biger-relationship-edge-color);
+}
+
+/* Aplica un color diferente a las aristas de las jerarquías */
+.sprotty-edge.inheritance {
+    stroke: var(--biger-inheritance-edge-color);
     stroke-width: 3;
 }
 
@@ -144,8 +200,15 @@ text {
     stroke-width: 6;
 }
 
-.sprotty-edge.selected {
-    stroke: yellow;
+/* Mantiene el color de la relación normal cuando está seleccionada */
+.sprotty-edge.relationship-edge.selected {
+    stroke: var(--biger-relationship-edge-color);
+    stroke-width: 5;
+}
+
+/* Mantiene el color de la jerarquía cuando está seleccionada */
+.sprotty-edge.inheritance.selected {
+    stroke: var(--biger-inheritance-edge-color);
     stroke-width: 5;
 }
 
@@ -159,8 +222,210 @@ text {
     stroke-width: 5;
 }
 
+/* -------------------------------------------------------------------------- */
+/* POPUP ADAPTADO A LA APARIENCIA DE LAS ENTIDADES */
+/* -------------------------------------------------------------------------- */
+
+/*
+ El popup utiliza los mismos colores que las entidades y adapta
+ automáticamente su anchura al contenido de la cabecera.
+ */
+.sprotty-popup {
+    display: inline-block;
+
+    width: max-content !important;
+    min-width: 165px !important;
+    max-width: none !important;
+    box-sizing: border-box;
+
+    color: #000 !important;
+    background-color: rgb(219, 218, 235) !important;
+
+    border: 1px solid #8f8e9c !important;
+    border-radius: 5px;
+
+    box-shadow: none !important;
+    filter: none !important;
+    overflow: hidden;
+}
+
+/*
+ Los contenedores internos ocupan todo el ancho calculado por el popup
+ y eliminan los estilos heredados que podrían alterar su apariencia.
+ */
+.sprotty-popup > *,
+.sprotty-popup .sprotty-infoBlock,
+.sprotty-popup .popup-header {
+    width: 100% !important;
+    min-width: 165px !important;
+    max-width: none !important;
+    box-sizing: border-box;
+
+    color: #000 !important;
+    background-color: rgb(219, 218, 235) !important;
+
+    border: 0 !important;
+    outline: 0 !important;
+
+    box-shadow: none !important;
+    filter: none !important;
+}
+
+/*
+ Mantiene la etiqueta y el nombre en una sola línea.
+ Los nombres largos amplían automáticamente el ancho del popup.
+ */
+.popup-element-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    width: max-content !important;
+    min-width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box;
+
+    padding: 4px 8px;
+
+    color: #000 !important;
+    background-color: rgb(219, 218, 235) !important;
+
+    border: 0 !important;
+    outline: 0 !important;
+
+    white-space: nowrap;
+    overflow: visible;
+
+    box-shadow: none !important;
+    filter: none !important;
+}
+
+/* Etiqueta ENTITY o RELATIONSHIP */
+.popup-tag {
+    flex: 0 0 auto;
+}
+
+/* Nombre completo de la entidad o relación */
+.popup-element-name {
+    flex: 0 0 auto;
+
+    color: #000 !important;
+
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+/*
+ Los botones conservan el ancho del popup y utilizan una distribución
+ común para mantener alineados los iconos y los textos.
+ */
+button.popup-button {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+
+    display: grid;
+    grid-template-columns: 20px 100px;
+    align-items: center;
+    justify-content: center;
+    column-gap: 7px;
+
+    width: 100% !important;
+    min-width: 165px !important;
+    max-width: none !important;
+    height: 32px;
+    box-sizing: border-box;
+
+    margin: 0;
+    padding: 0 8px;
+
+    color: #000 !important;
+    background-color: rgb(219, 218, 235) !important;
+
+    font: inherit;
+
+    border: 0 !important;
+    border-radius: 0 !important;
+    outline: 0;
+
+    /* Dibuja un único separador horizontal entre las filas del popup */
+    box-shadow: inset 0 1px 0 #8f8e9c !important;
+
+    cursor: pointer;
+}
+
+/* Texto alineado */
+.popup-button-label {
+    display: block;
+
+    color: #000 !important;
+
+    white-space: nowrap;
+    text-align: left;
+}
+
+/* Iconos alineados */
+.popup-button .codicon {
+    display: block;
+    width: 20px;
+
+    color: #000 !important;
+
+    text-align: center;
+}
+
+/* Hover idéntico en todos los temas */
+button.popup-button:hover {
+    color: #000 !important;
+    background-color: rgb(205, 204, 220) !important;
+
+    box-shadow: inset 0 1px 0 #8f8e9c !important;
+}
+
+button.popup-button:hover .popup-button-label,
+button.popup-button:hover .codicon {
+    color: #000 !important;
+}
+
+/* Foco de teclado */
+button.popup-button:focus {
+    outline: none;
+}
+
+button.popup-button:focus-visible {
+    outline: 2px solid #5b6f91;
+    outline-offset: -2px;
+}
+
+/* -------------------------------------------------------------------------- */
+/* FLECHAS */
+/* -------------------------------------------------------------------------- */
+
+/* Color de las puntas utilizadas por las relaciones normales */
 .sprotty-edge-arrow {
-    fill:var(--vscode-editorActiveLineNumber-foreground);
+    fill: var(--biger-relationship-edge-color);
+}
+
+/*
+ La punta de las jerarquías utiliza el mismo color que su línea,
+ diferenciándose visualmente de las relaciones normales.
+ */
+.sprotty-edge-arrow.inheritance-edge-arrow {
+    fill: var(--biger-inheritance-edge-color);
+    stroke: var(--biger-inheritance-edge-color);
+}
+
+/* Mantiene sincronizados la línea y la punta de una relación seleccionada */
+.sprotty-edge.relationship-edge.selected .sprotty-edge-arrow {
+    fill: var(--biger-relationship-edge-color);
+    stroke: var(--biger-relationship-edge-color);
+}
+
+/* Mantiene sincronizados la línea y la punta de una jerarquía seleccionada */
+.sprotty-edge.inheritance.selected
+    .sprotty-edge-arrow.inheritance-edge-arrow {
+    fill: var(--biger-inheritance-edge-color);
+    stroke: var(--biger-inheritance-edge-color);
 }
 
 .sprotty-edge > .sprotty-routing-handle.mouseover {
@@ -182,28 +447,26 @@ text {
     fill: var(--vscode-editor-selectionHighlightBackground);
 }
 
+/* -------------------------------------------------------------------------- */
+/* ESTADOS Y MENSAJES */
+/* -------------------------------------------------------------------------- */
 
 .sprotty-status {
     position: absolute;
     top: 100px;
-	font-size: 15px;
-	z-index: 1;
+    font-size: 15px;
+    z-index: 1;
 }
-.sprotty-status .error {
+
+.sprotty-status .error,
+.sprotty-status .fatal {
     color: orangered;
 }
-.sprotty-status-message.error {
-	background-color: white;
-	border: 1px solid black;
-	padding: 10px;
-	margin-left: 15px;
-}
-.sprotty-status .fatal {
-	color: orangered;
-}
+
+.sprotty-status-message.error,
 .sprotty-status-message.fatal {
-	background-color: white;
-	border: 1px solid black;
-	padding: 10px;
-	margin-left: 15px;
+    background-color: white;
+    border: 1px solid black;
+    padding: 10px;
+    margin-left: 15px;
 }

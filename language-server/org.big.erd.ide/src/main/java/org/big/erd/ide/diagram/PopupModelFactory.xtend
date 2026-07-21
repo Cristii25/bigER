@@ -68,6 +68,11 @@ class PopupModelFactory implements IPopupModelFactory {
 		}
 	}
 
+	/*
+ 	Construye el contenido del popup utilizando botones HTML
+ 	para poder controlar completamente su apariencia mediante CSS
+ 	y mantener un diseño uniforme en todos los temas de VS Code.
+ 	*/
 	protected def createPopup(EObject semanticElement, SModelElement element, RequestPopupModelAction request) {
 		val popupId = element.id + '-popup'
 		val issueMarker = element.children?.filter(SIssueMarker)?.head
@@ -92,10 +97,10 @@ class PopupModelFactory implements IPopupModelFactory {
 					target = element.id + '.label'
 					kind = 'edit'
 					code = '''
-						<vscode-button class="popup-button" appearance="secondary">
-							Rename
-							<span slot="start" class="codicon codicon-edit"></span>
-						</vscode-button>
+						<button type="button" class="popup-button">
+							<span class="codicon codicon-edit"></span>
+							<span class="popup-button-label">Rename</span>
+						</button>
 					'''
 				],
 				new PopupButton [
@@ -104,10 +109,10 @@ class PopupModelFactory implements IPopupModelFactory {
 					target = element.id
 					kind = 'delete'
 					code = '''
-						<vscode-button class="popup-button" appearance="secondary">
-							Delete
-							<span slot="start" class="codicon codicon-trash"></span>
-						</vscode-button>
+						<button type="button" class="popup-button">
+							<span class="codicon codicon-trash"></span>
+							<span class="popup-button-label">Delete</span>
+						</button>
 					'''
 				],
 				new PopupButton [
@@ -116,10 +121,10 @@ class PopupModelFactory implements IPopupModelFactory {
 					target = element.id
 					kind = 'addAttribute'
 					code = '''
-						<vscode-button class="popup-button" appearance="secondary">
-							Add Attribute
-							<span slot="start" class="codicon codicon-add"></span>
-						</vscode-button>
+						<button type="button" class="popup-button">
+							<span class="codicon codicon-add"></span>
+							<span class="popup-button-label">Add Attribute</span>
+						</button>
 					'''
 				]
 			]
@@ -129,21 +134,27 @@ class PopupModelFactory implements IPopupModelFactory {
 		return htmlRoot
 	}
 
+	/*
+ 	Genera la cabecera del popup separando la etiqueta del tipo
+ 	y el nombre del elemento para facilitar su alineación y permitir
+ 	que el ancho del popup se adapte al contenido.
+ 	*/
 	protected def String getHeader(EObject semanticElement) {
 		'''
 			<div class="popup-header">
 				«IF semanticElement instanceof Entity»
 					<div class="popup-element-info">
-						<vscode-tag class="popup-tag">Entity</vscode-tag>«semanticElement.name»
+						<vscode-tag class="popup-tag">Entity</vscode-tag>
+						<span class="popup-element-name">«semanticElement.name»</span>
 					</div>
 				«ENDIF»
 				«IF semanticElement instanceof Relationship»
 					<div class="popup-element-info">
-						<vscode-tag class="popup-tag">Relationship</vscode-tag>«semanticElement.name»
+						<vscode-tag class="popup-tag">Relationship</vscode-tag>
+						<span class="popup-element-name">«semanticElement.name»</span>
 					</div>
 				«ENDIF»
 			</div>
-			
 		'''
 	}
 

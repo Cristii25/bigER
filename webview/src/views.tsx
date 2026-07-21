@@ -216,14 +216,36 @@ export class RelationshipNodeView extends RectangularNodeView {
   }
 }
 
+/**
+ * Renderiza la punta de flecha utilizada en las jerarquías de herencia.
+ *
+ * Se añade una clase CSS específica para que la flecha de herencia pueda
+ * utilizar un color diferente al de las relaciones normales y adaptarse
+ * al tema activo de VS Code.
+ */
 @injectable()
 export class InheritanceEdgeView extends PolylineEdgeView {
-    override renderAdditionals(edge: SEdge, segments: Point[], context: RenderingContext): VNode[] {
+    override renderAdditionals(
+        edge: SEdge,
+        segments: Point[],
+        context: RenderingContext
+    ): VNode[] {
+        // Evita acceder a puntos inexistentes cuando la ruta no contiene suficientes segmentos
+        if (segments.length < 2) {
+            return [];
+        }
+
         const p1 = segments[segments.length - 2];
         const p2 = segments[segments.length - 1];
+
+        // Dibuja la punta de flecha al final de la ruta y le asigna la clase de herencia
         return [
-            <path class-sprotty-edge-arrow={true} d="M 6,-3 L 0,0 L 6,3 Z"
-            transform={`rotate(${angle(p2, p1)} ${p2.x} ${p2.y}) translate(${p2.x} ${p2.y})`}/>
+            <path
+                class-sprotty-edge-arrow={true}
+                class-inheritance-edge-arrow={true}
+                d="M 6,-3 L 0,0 L 6,3 Z"
+                transform={`rotate(${angle(p2, p1)} ${p2.x} ${p2.y}) translate(${p2.x} ${p2.y})`}
+            />
         ];
     }
 }
@@ -240,6 +262,12 @@ export class PopupButtonView extends PreRenderedView {
     }
 }
 
+/**
+ * Renderiza las aristas correspondientes a las relaciones normales.
+ *
+ * Se añade una clase CSS específica al contenedor de la arista para
+ * poder aplicar un color distinto al utilizado por las jerarquías.
+ */
 @injectable()
 export class NotationEdgeView extends PolylineEdgeView {
     override render(edge: Readonly<NotationEdge>, context: RenderingContext, args?: IViewArgs): VNode | undefined {
@@ -257,11 +285,19 @@ export class NotationEdgeView extends PolylineEdgeView {
             return <g>{context.renderChildren(edge, { route })}</g>;
         }
 
-        return <g class-sprotty-edge={true} class-mouseover={edge.hoverFeedback}>
+        // La clase relationship-edge permite diferenciar visualmente
+        // las relaciones normales de las aristas de herencia
+        return (
+            <g
+                class-sprotty-edge={true}
+                class-relationship-edge={true}
+                class-mouseover={edge.hoverFeedback}
+            >
                 {this.renderLine(edge, route, context, args)}
                 {this.renderAdditionals(edge, route, context)}
                 {context.renderChildren(edge, { route })}
-        </g>;
+            </g>
+        );
     }
 
     override renderAdditionals(edge: NotationEdge, segments: Point[], context: RenderingContext): VNode[] {
