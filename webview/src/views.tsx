@@ -2,7 +2,7 @@
 import { VNode } from "snabbdom";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { RenderingContext, svg, RectangularNodeView, SEdge, PolylineEdgeView, SGraphView,
-         IViewArgs, Hoverable, Selectable, PreRenderedView } from "sprotty";
+         IViewArgs, Hoverable, Selectable, PreRenderedView, SLabel, SLabelView } from "sprotty";
 import { injectable } from "inversify";
 import { toDegrees, Point } from "sprotty-protocol";
 import { EntityNode, ERModel, NotationEdge, PopupButton, RelationshipNode } from "./model";
@@ -53,6 +53,48 @@ export class EntityNodeView extends RectangularNodeView {
             {(node.children[1] && node.children[1].children.length > 0) ?
                 <path class-comp-separator={true} d={rhombStr}></path> : ""}
         </g>;
+    }
+}
+
+/**
+ * Renderiza los atributos marcados como UNIQUE.
+ *
+ * Se reutiliza el renderizado estándar de Sprotty para mostrar el texto
+ * y se añade una línea discontinua debajo mediante un elemento SVG
+ */
+@injectable()
+export class UniqueLabelView extends SLabelView {
+    override render(
+        label: Readonly<SLabel>,
+        context: RenderingContext
+    ): VNode | undefined {
+
+        // Renderiza primero la etiqueta utilizando el comportamiento estándar
+        const renderedLabel = super.render(label, context);
+
+        if (!renderedLabel) {
+            return undefined;
+        }
+
+        // Calcula la posición vertical y el ancho de la línea discontinua
+        // para que coincida con el texto renderizado.
+        const underlineY = 3;
+        const underlineWidth = label.bounds.width;
+
+        return (
+            <g>
+                {renderedLabel}
+
+                {/* Línea discontinua utilizada para representar atributos UNIQUE */}
+                <line
+                    x1={0}
+                    y1={underlineY}
+                    x2={underlineWidth}
+                    y2={underlineY}
+                    class-unique-underline={true}
+                />
+            </g>
+        );
     }
 }
 

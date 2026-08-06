@@ -531,6 +531,7 @@ class ERDiagramGenerator implements IDiagramGenerator {
 			case AttributeType.KEY: DiagramTypes.LABEL_KEY
 			case AttributeType.PARTIAL_KEY: DiagramTypes.LABEL_PARTIAL_KEY
 			case AttributeType.DERIVED: DiagramTypes.LABEL_DERIVED
+			case AttributeType.UNIQUE: DiagramTypes.LABEL_UNIQUE
 			default: DiagramTypes.LABEL_TEXT
 		}
 	}

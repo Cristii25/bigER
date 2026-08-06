@@ -165,6 +165,17 @@ text {
     fill: gray;
 }
 
+.unique {
+    font-style: italic;
+}
+
+.unique-underline {
+    stroke: #000;
+    stroke-width: 1;
+    stroke-dasharray: 4 3;
+    pointer-events: none;
+}
+
 .derived {
     fill: gray;
 }

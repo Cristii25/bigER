@@ -8,7 +8,7 @@ import { configureModelElement, HtmlRoot, HtmlRootView, overrideViewerOptions, P
     TYPES, loadDefaultModules, ConsoleLogger, LogLevel, SCompartmentView, SCompartment, editLabelFeature,
     labelEditUiModule, SModelRoot, SLabel, ExpandButtonHandler, SButton, expandFeature, SLabelView, ExpandButtonView,
     SRoutingHandle, SRoutingHandleView, editFeature, configureActionHandler } from 'sprotty';
-import { InheritanceEdgeView, ERModelView, EntityNodeView, RelationshipNodeView, NotationEdgeView } from './views';
+import { InheritanceEdgeView, ERModelView, EntityNodeView, RelationshipNodeView, NotationEdgeView, UniqueLabelView } from './views';
 import { EntityNode, ERModel, NotationEdge, RelationshipNode, InheritanceEdge, CardinalityLabel, RoleLabel, LeftCardinalityLabel,
     RightCardinalityLabel, LeftRoleLabel, RightRoleLabel } from './model';
 import { BigerEdgeLayoutPostprocessor } from './layout-postprocessor';
@@ -65,6 +65,7 @@ const DiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     configureModelElement(context, 'label:key', SLabel, SLabelView, { enable: [editLabelFeature] });
     configureModelElement(context, 'label:visibility', SLabel, SLabelView, { enable: [editLabelFeature] });
     configureModelElement(context, 'label:partial-key', SLabel, SLabelView, { enable: [editLabelFeature] });
+    configureModelElement(context, 'label:unique', SLabel, UniqueLabelView, { enable: [editLabelFeature] });
     configureModelElement(context, 'label:derived', SLabel, SLabelView, { enable: [editLabelFeature] });
     // Additional Sprotty elements
     configureModelElement(context, 'html', HtmlRoot, HtmlRootView);
