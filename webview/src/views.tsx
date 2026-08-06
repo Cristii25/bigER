@@ -1,6 +1,7 @@
 /** @jsx svg */
 import { VNode } from "snabbdom";
-import { RenderingContext, svg, RectangularNodeView, SEdge, PolylineEdgeView, SGraphView, 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { RenderingContext, svg, RectangularNodeView, SEdge, PolylineEdgeView, SGraphView,
          IViewArgs, Hoverable, Selectable, PreRenderedView } from "sprotty";
 import { injectable } from "inversify";
 import { toDegrees, Point } from "sprotty-protocol";
@@ -102,11 +103,11 @@ export class RelationshipNodeView extends RectangularNodeView {
     const titleFont = 18;
     const attrFont = 14;
 
-    const gapTitleToSep = 14;  // espacio TÍTULO -> SEPARADOR
-    const gapSepToAttrs = 8;   // espacio SEPARADOR -> ATRIBUTOS (más pequeño = atributos más arriba)
-    const attrLineH = 22;      // separación entre líneas de ATRIBUTOS
+    const gapTitleToSep = 14; // espacio TÍTULO -> SEPARADOR
+    const gapSepToAttrs = 8; // espacio SEPARADOR -> ATRIBUTOS (más pequeño = atributos más arriba)
+    const attrLineH = 22; // separación entre líneas de ATRIBUTOS
 
-    const innerPadX = 0;      // margen para recortar el SEPARADOR (que no toque el borde del rombo)
+    const innerPadX = 0; // margen para recortar el SEPARADOR (que no toque el borde del rombo)      // margen para recortar el SEPARADOR (que no toque el borde del rombo)
 
     // Devuelve la mitad del ancho disponible del rombo a una Y absoluta
     // Se usa para RECORTAR el SEPARADOR según el “estrechamiento” del rombo
@@ -118,20 +119,26 @@ export class RelationshipNodeView extends RectangularNodeView {
     // ---- CENTRADO DEL BLOQUE ----
     // blockH = altura del contenido interno (título + separador + atributos)
     // top = desplazamiento para centrar ese contenido dentro del rombo
-    const blockH =
-      titleFont +
-      (hasAttrs ? (gapTitleToSep + gapSepToAttrs + attrLines.length * attrLineH) : 0);
+    const attrsBlockH = hasAttrs ?
+        gapTitleToSep + gapSepToAttrs + (attrLines.length * attrLineH) :
+        0;
+
+    const blockH = titleFont + attrsBlockH;
 
     const top = (h - blockH) / 2;
 
     // ---- POSICIONES RELATIVAS DENTRO DEL BLOQUE ----
     // SOLO movemos el TÍTULO con offset; separador y atributos quedan fijos
     const titleYRelBase = titleFont / 2;
-    const titleOffsetY = 6;                 // mueve SOLO el TÍTULO (más = más abajo)
+    const titleOffsetY = 6; // mueve SOLO el TÍTULO (más = más abajo)
     const titleYRel = titleYRelBase + titleOffsetY;
 
-    const sepYRel = titleFont + gapTitleToSep;  // Y del SEPARADOR (no depende del offset del título)
-    const attrsStartYRel = titleFont + gapTitleToSep + gapSepToAttrs + attrLineH / 2; // inicio ATRIBUTOS
+    const sepYRel = titleFont + gapTitleToSep; // Y del SEPARADOR (no depende del offset del título)
+    const attrsStartYRel =
+        titleFont +
+        gapTitleToSep +
+        gapSepToAttrs +
+        (attrLineH / 2); // inicio ATRIBUTOS
 
     // ---- SEPARADOR (línea) ----
     // Se recorta según el ancho disponible del rombo en esa altura
@@ -194,7 +201,7 @@ export class RelationshipNodeView extends RectangularNodeView {
           {/* ATRIBUTOS (cada línea se coloca con attrsStartYRel + i*attrLineH) */}
           {/* (solo visibles si la relación está expandida) */}
           {hasAttrs && node.expanded && attrLines.map((line, i) => {
-            const yRel = Number(attrsStartYRel + i * attrLineH);
+            const yRel = Number(attrsStartYRel + (i * attrLineH));
 
             return (
               <text
