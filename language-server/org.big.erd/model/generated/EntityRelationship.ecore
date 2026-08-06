@@ -59,6 +59,7 @@
     <eLiterals name="OPTIONAL" value="3" literal="optional"/>
     <eLiterals name="DERIVED" value="4" literal="derived"/>
     <eLiterals name="MULTIVALUED" value="5" literal="multivalued"/>
+    <eLiterals name="UNIQUE" value="6" literal="unique"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="CardinalityType">
     <eLiterals name="NONE" literal="NONE"/>

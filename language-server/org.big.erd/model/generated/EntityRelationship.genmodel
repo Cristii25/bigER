@@ -13,6 +13,7 @@
       <genEnumLiterals ecoreEnumLiteral="EntityRelationship.ecore#//AttributeType/OPTIONAL"/>
       <genEnumLiterals ecoreEnumLiteral="EntityRelationship.ecore#//AttributeType/DERIVED"/>
       <genEnumLiterals ecoreEnumLiteral="EntityRelationship.ecore#//AttributeType/MULTIVALUED"/>
+      <genEnumLiterals ecoreEnumLiteral="EntityRelationship.ecore#//AttributeType/UNIQUE"/>
     </genEnums>
     <genEnums typeSafeEnumCompatible="false" ecoreEnum="EntityRelationship.ecore#//CardinalityType">
       <genEnumLiterals ecoreEnumLiteral="EntityRelationship.ecore#//CardinalityType/NONE"/>

@@ -1,0 +1,8 @@
+erdiagram UniqueAttributeValidation
+
+entity User {
+    id: INT key
+    email: VARCHAR(255) unique
+    username: VARCHAR(50) unique
+    name: VARCHAR(100)
+}

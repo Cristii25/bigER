@@ -43,7 +43,8 @@ enum AttributeType:
 	PARTIAL_KEY = 'partial-key' | 
 	OPTIONAL = 'optional' |  
 	DERIVED = 'derived' | 
-	MULTIVALUED = 'multivalued';
+	MULTIVALUED = 'multivalued' |
+	UNIQUE = 'unique';
 
 enum CardinalityType:
 	NONE = 'NONE' | 
