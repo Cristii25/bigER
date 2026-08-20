@@ -4,9 +4,13 @@ import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 generate entityRelationship "http://www.big.org/erd/EntityRelationship"
 
 Model:
-	'erdiagram' name=ID
-	(notation=NotationOption?)
-	(entities+=Entity | relationships+=Relationship)*;
+    'erdiagram' name=ID
+    (notation=NotationOption?)
+    (
+        entities+=Entity |
+        relationships+=Relationship |
+        hierarchies+=Hierarchy
+    )*;
 
 NotationOption:
 	'notation' '=' notationType=NotationType;
@@ -32,6 +36,12 @@ Attribute:
 
 DataType:
 	type=ID ('(' size=INT (',' d=INT)? ')')?;  
+
+Hierarchy:
+    'hierarchy'
+    base=[Entity]
+    completeness=HierarchyCompleteness
+    constraint=HierarchyConstraint;
 
 @Override	
 terminal INT returns ecore::EInt:
@@ -78,3 +88,11 @@ enum VisibilityType:
 	PRIVATE_STRING='private'|
 	PROTECTED_STRING='protected'|
 	PACKAGE_STRING='package';
+
+enum HierarchyCompleteness:
+    TOTAL = 'total' |
+    PARTIAL = 'partial';
+
+enum HierarchyConstraint:
+    OVERLAPPING = 'overlapping' |
+    DISJOINT = 'disjoint';

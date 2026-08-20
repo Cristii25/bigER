@@ -68,5 +68,47 @@ class ErValidatorTest {
 			EntityRelationshipValidator.INVALID_CARDINALITY
 		)
 	}
-	
+
+	@Test
+	def void testInvalidHierarchyBase() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			entity Product {
+				id key
+			}
+
+			hierarchy Product total disjoint
+		''')
+
+		validationTestHelper.assertError(
+			model.eResource(),
+			HIERARCHY,
+			EntityRelationshipValidator.INVALID_HIERARCHY_BASE
+		)
+	}
+
+	@Test
+	def void testDuplicateHierarchy() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			entity Person {
+				id key
+			}
+
+			entity Employee extends Person {
+				employee_id key
+			}
+
+			hierarchy Person total disjoint
+			hierarchy Person partial overlapping
+		''')
+
+		validationTestHelper.assertError(
+			model.eResource(),
+			HIERARCHY,
+			EntityRelationshipValidator.DUPLICATE_HIERARCHY
+		)
+	}
 }

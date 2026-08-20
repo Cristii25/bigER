@@ -1,0 +1,92 @@
+erdiagram HierarchyValidation
+
+// ==================================================
+// Ejemplos de jerarquías válidas
+// ==================================================
+
+// Caso 1: total + disjoint
+entity Person {
+    id: INT key
+}
+
+entity Employee extends Person {
+    employee_id: INT key
+}
+
+entity Customer extends Person {
+    customer_id: INT key
+}
+
+hierarchy Person total disjoint
+
+
+// Caso 2: total + overlapping
+entity Vehicle {
+    id: INT key
+}
+
+entity Car extends Vehicle {
+    car_id: INT key
+}
+
+entity AmphibiousVehicle extends Vehicle {
+    amphibious_id: INT key
+}
+
+hierarchy Vehicle total overlapping
+
+
+// Caso 3: partial + disjoint
+entity Account {
+    id: INT key
+}
+
+entity PersonalAccount extends Account {
+    personal_id: INT key
+}
+
+entity BusinessAccount extends Account {
+    business_id: INT key
+}
+
+hierarchy Account partial disjoint
+
+
+// Caso 4: partial + overlapping
+entity Worker {
+    id: INT key
+}
+
+entity Developer extends Worker {
+    developer_id: INT key
+}
+
+entity Manager extends Worker {
+    manager_id: INT key
+}
+
+hierarchy Worker partial overlapping
+
+
+// ==================================================
+// Ejemplos de jerarquías no válidas
+// Descomentar cada caso por separado para probar
+// las validaciones
+// ==================================================
+
+// Caso no válido 1:
+// No se puede declarar una hierarchy para una entity
+// que no tenga entidades hijas.
+//
+// entity Product {
+//     id: INT key
+// }
+
+// hierarchy Product total disjoint
+
+
+// Caso no válido 2:
+// No se puede definir más de una hierarchy
+// para la misma entity base.
+//
+// hierarchy Person partial overlapping

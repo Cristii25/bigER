@@ -12,6 +12,8 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.big.erd.entityRelationship.NotationType
 import org.big.erd.entityRelationship.AttributeType
 import org.big.erd.entityRelationship.CardinalityType
+import org.big.erd.entityRelationship.HierarchyCompleteness
+import org.big.erd.entityRelationship.HierarchyConstraint
 
 @ExtendWith(InjectionExtension)
 @InjectWith(EntityRelationshipInjectorProvider)
@@ -95,26 +97,154 @@ class EntityRelationshipParsingTest {
 		Assertions.assertEquals(true, model.relationships.get(0).isWeak)
 	}
 	
-	/* TODO: Test Inheritance
 	@Test
 	def void testInheritance() {
 		val model = parseHelper.parse('''
 			erdiagram TestModel
-			
-			entity Entity1 {
+
+			entity Person {
 				id key
 			}
-			entity Entity2 extends Entity1{
-				id
+
+			entity Employee extends Person {
+				employee_id key
 			}
-			weak relationship Rel {
-				Entity1 -> Entity2
-			}
-		'''
-		)
+		''')
+
 		checkModel(model)
+
+		val person = model.entities.filter[it.name.equals("Person")].get(0)
+		val employee = model.entities.filter[it.name.equals("Employee")].get(0)
+
+		Assertions.assertEquals(person, employee.extends)
 	}
-	*/
+
+	@Test
+	def void testHierarchy() {
+		val model = parseHelper.parse('''
+			erdiagram TestModel
+
+			// total + disjoint
+			entity Person {
+				id key
+			}
+
+			entity Employee extends Person {
+				employee_id key
+			}
+
+			entity Customer extends Person {
+				customer_id key
+			}
+
+			hierarchy Person total disjoint
+
+
+			// total + overlapping
+			entity Vehicle {
+				id key
+			}
+
+			entity Car extends Vehicle {
+				car_id key
+			}
+
+			entity AmphibiousVehicle extends Vehicle {
+				amphibious_id key
+			}
+
+			hierarchy Vehicle total overlapping
+
+
+			// partial + disjoint
+			entity Account {
+				id key
+			}
+
+			entity PersonalAccount extends Account {
+				personal_id key
+			}
+
+			entity BusinessAccount extends Account {
+				business_id key
+			}
+
+			hierarchy Account partial disjoint
+
+
+			// partial + overlapping
+			entity Worker {
+				id key
+			}
+
+			entity Developer extends Worker {
+				developer_id key
+			}
+
+			entity Manager extends Worker {
+				manager_id key
+			}
+
+			hierarchy Worker partial overlapping
+		''')
+
+		checkModel(model)
+
+		Assertions.assertEquals(4, model.hierarchies.size)
+
+		val personHierarchy = model.hierarchies.filter[
+			it.base.name.equals("Person")
+		].get(0)
+
+		val vehicleHierarchy = model.hierarchies.filter[
+			it.base.name.equals("Vehicle")
+		].get(0)
+
+		val accountHierarchy = model.hierarchies.filter[
+			it.base.name.equals("Account")
+		].get(0)
+
+		val workerHierarchy = model.hierarchies.filter[
+			it.base.name.equals("Worker")
+		].get(0)
+
+		Assertions.assertEquals(
+			HierarchyCompleteness.TOTAL,
+			personHierarchy.completeness
+		)
+		
+		Assertions.assertEquals(
+			HierarchyConstraint.DISJOINT,
+			personHierarchy.constraint
+		)
+
+		Assertions.assertEquals(
+			HierarchyCompleteness.TOTAL,
+			vehicleHierarchy.completeness
+		)
+		Assertions.assertEquals(
+			HierarchyConstraint.OVERLAPPING,
+			vehicleHierarchy.constraint
+		)
+
+		Assertions.assertEquals(
+			HierarchyCompleteness.PARTIAL,
+			accountHierarchy.completeness
+		)
+		Assertions.assertEquals(
+			HierarchyConstraint.DISJOINT,
+			accountHierarchy.constraint
+		)
+
+		Assertions.assertEquals(
+			HierarchyCompleteness.PARTIAL,
+			workerHierarchy.completeness
+		)
+		Assertions.assertEquals(
+			HierarchyConstraint.OVERLAPPING,
+			workerHierarchy.constraint
+		)
+	}
 	
 	@Test
 	def void testEntityWithAttributes() {

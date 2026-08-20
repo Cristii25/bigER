@@ -47,11 +47,20 @@
       <genEnumLiterals ecoreEnumLiteral="EntityRelationship.ecore#//VisibilityType/PROTECTED_STRING"/>
       <genEnumLiterals ecoreEnumLiteral="EntityRelationship.ecore#//VisibilityType/PACKAGE_STRING"/>
     </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="EntityRelationship.ecore#//HierarchyCompleteness">
+      <genEnumLiterals ecoreEnumLiteral="EntityRelationship.ecore#//HierarchyCompleteness/TOTAL"/>
+      <genEnumLiterals ecoreEnumLiteral="EntityRelationship.ecore#//HierarchyCompleteness/PARTIAL"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="EntityRelationship.ecore#//HierarchyConstraint">
+      <genEnumLiterals ecoreEnumLiteral="EntityRelationship.ecore#//HierarchyConstraint/OVERLAPPING"/>
+      <genEnumLiterals ecoreEnumLiteral="EntityRelationship.ecore#//HierarchyConstraint/DISJOINT"/>
+    </genEnums>
     <genClasses ecoreClass="EntityRelationship.ecore#//Model">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute EntityRelationship.ecore#//Model/name"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference EntityRelationship.ecore#//Model/notation"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference EntityRelationship.ecore#//Model/entities"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference EntityRelationship.ecore#//Model/relationships"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference EntityRelationship.ecore#//Model/hierarchies"/>
     </genClasses>
     <genClasses ecoreClass="EntityRelationship.ecore#//NotationOption">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute EntityRelationship.ecore#//NotationOption/notationType"/>
@@ -87,6 +96,11 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute EntityRelationship.ecore#//DataType/type"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute EntityRelationship.ecore#//DataType/size"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute EntityRelationship.ecore#//DataType/d"/>
+    </genClasses>
+    <genClasses ecoreClass="EntityRelationship.ecore#//Hierarchy">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference EntityRelationship.ecore#//Hierarchy/base"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute EntityRelationship.ecore#//Hierarchy/completeness"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute EntityRelationship.ecore#//Hierarchy/constraint"/>
     </genClasses>
   </genPackages>
 </genmodel:GenModel>

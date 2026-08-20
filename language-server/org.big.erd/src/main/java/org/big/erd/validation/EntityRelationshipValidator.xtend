@@ -16,6 +16,7 @@ import org.big.erd.entityRelationship.Relationship
 import org.big.erd.entityRelationship.RelationshipType
 import org.big.erd.entityRelationship.VisibilityType
 import org.big.erd.entityRelationship.Attribute
+import org.big.erd.entityRelationship.Hierarchy
 
 /**
  * Custom ValidationRules with composed checks 
@@ -31,6 +32,8 @@ class EntityRelationshipValidator extends AbstractEntityRelationshipValidator {
 	public static final String MISSING_PRIMARY_KEY = "missingPrimaryKey";
 	public static final String MISSING_PARTIAL_KEY = "missingPartialKey";
 	public static final String INVALID_CARDINALITY = "invalidCardinality";
+	public static final String INVALID_HIERARCHY_BASE = "invalidHierarchyBase";
+	public static final String DUPLICATE_HIERARCHY = "duplicateHierarchy";
 	
 	@Check
 	def checkKeys(Entity entity) {
@@ -43,6 +46,42 @@ class EntityRelationshipValidator extends AbstractEntityRelationshipValidator {
 				warning('''Missing primary key for entity''', entity, ENTITY__ATTRIBUTES, MISSING_PRIMARY_KEY)
 			}
 		}
+	}
+
+	@Check
+	def checkHierarchy(Hierarchy hierarchy) {
+    	val model = hierarchy.eContainer
+
+    	if (model instanceof Model) {
+
+        	// La entidad indicada como base debe tener al menos una entidad hija
+        	val hasChildren = model.entities.exists[
+            	it.extends === hierarchy.base
+        	]
+
+        	if (!hasChildren) {
+            	error(
+                	'''Entity '«hierarchy.base.name»' is not the base of a hierarchy''',
+                	hierarchy,
+                	HIERARCHY__BASE,
+                	INVALID_HIERARCHY_BASE
+            	)
+        	}
+
+        	// Una misma entidad base solo puede tener una definición de hierarchy
+        	val sameBaseHierarchies = model.hierarchies.filter[
+            	it.base === hierarchy.base
+        	]
+
+        	if (sameBaseHierarchies.size > 1) {
+            	error(
+                	'''Hierarchy for entity '«hierarchy.base.name»' is defined more than once''',
+                	hierarchy,
+                	HIERARCHY__BASE,
+                	DUPLICATE_HIERARCHY
+            	)
+        	}
+    	}
 	}
 	
 	@Check

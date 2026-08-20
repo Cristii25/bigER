@@ -10,6 +10,8 @@
         eType="#//Entity" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="relationships" upperBound="-1"
         eType="#//Relationship" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="hierarchies" upperBound="-1"
+        eType="#//Hierarchy" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NotationOption">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="notationType" eType="#//NotationType"/>
@@ -52,6 +54,11 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="size" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="d" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Hierarchy">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="base" eType="#//Entity"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="completeness" eType="#//HierarchyCompleteness"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="constraint" eType="#//HierarchyConstraint"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EEnum" name="AttributeType">
     <eLiterals name="NONE" literal="none"/>
     <eLiterals name="KEY" value="1" literal="key"/>
@@ -92,5 +99,13 @@
     <eLiterals name="PRIVATE_STRING" value="6" literal="private"/>
     <eLiterals name="PROTECTED_STRING" value="7" literal="protected"/>
     <eLiterals name="PACKAGE_STRING" value="8" literal="package"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="HierarchyCompleteness">
+    <eLiterals name="TOTAL" literal="total"/>
+    <eLiterals name="PARTIAL" value="1" literal="partial"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="HierarchyConstraint">
+    <eLiterals name="OVERLAPPING" literal="overlapping"/>
+    <eLiterals name="DISJOINT" value="1" literal="disjoint"/>
   </eClassifiers>
 </ecore:EPackage>
