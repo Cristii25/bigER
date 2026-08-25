@@ -81,7 +81,7 @@ hierarchy Worker partial overlapping
 // entity Product {
 //     id: INT key
 // }
-
+//
 // hierarchy Product total disjoint
 
 
@@ -90,3 +90,15 @@ hierarchy Worker partial overlapping
 // para la misma entity base.
 //
 // hierarchy Person partial overlapping
+
+
+// Caso no válido 3:
+// No se puede declarar una hierarchy sobre una entity
+// que extienda de otra, ya que solo se puede definir
+// sobre la entity raíz de la jerarquía.
+//
+// entity DeveloperEmployee extends Employee {
+//     developer_employee_id: INT key
+// }
+
+// hierarchy Employee partial disjoint

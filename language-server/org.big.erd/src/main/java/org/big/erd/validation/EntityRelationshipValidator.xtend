@@ -34,6 +34,7 @@ class EntityRelationshipValidator extends AbstractEntityRelationshipValidator {
 	public static final String INVALID_CARDINALITY = "invalidCardinality";
 	public static final String INVALID_HIERARCHY_BASE = "invalidHierarchyBase";
 	public static final String DUPLICATE_HIERARCHY = "duplicateHierarchy";
+	public static final String INVALID_HIERARCHY_ROOT = "invalidHierarchyRoot";
 	
 	@Check
 	def checkKeys(Entity entity) {
@@ -65,6 +66,16 @@ class EntityRelationshipValidator extends AbstractEntityRelationshipValidator {
                 	hierarchy,
                 	HIERARCHY__BASE,
                 	INVALID_HIERARCHY_BASE
+            	)
+        	}
+
+        	// La entidad base de una hierarchy debe ser la raíz de la jerarquía
+        	if (hierarchy.base.extends !== null) {
+            	error(
+                	'''Entity '«hierarchy.base.name»' is not the root of the hierarchy''',
+                	hierarchy,
+                	HIERARCHY__BASE,
+                	INVALID_HIERARCHY_ROOT
             	)
         	}
 

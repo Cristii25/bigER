@@ -89,6 +89,33 @@ class ErValidatorTest {
 	}
 
 	@Test
+	def void testInvalidHierarchyRoot() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			entity Person {
+				id key
+			}
+
+			entity Employee extends Person {
+				employee_id key
+			}
+
+			entity DeveloperEmployee extends Employee {
+				developer_employee_id key
+			}
+
+			hierarchy Employee partial disjoint
+		''')
+
+		validationTestHelper.assertError(
+			model.eResource(),
+			HIERARCHY,
+			EntityRelationshipValidator.INVALID_HIERARCHY_ROOT
+		)
+	}
+
+	@Test
 	def void testDuplicateHierarchy() {
 		val model = parseHelper.parse('''
 			erdiagram Model

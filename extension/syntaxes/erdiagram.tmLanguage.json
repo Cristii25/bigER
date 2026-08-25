@@ -1,75 +1,89 @@
 {
-	"name": "ER Diagram",
-	"scopeName": "source.erd",
-	"fileTypes": [
+    "name": "ER Diagram",
+
+    "scopeName": "source.erd",
+
+    "fileTypes": [
         "erd"
     ],
-	"patterns": [
-		{
+
+    "patterns": [
+        {
             "include": "#comments"
+
         }, {
-			"name": "entity.name.type.erdiagram",
-			"match": "\\b(entity|relationship)\\b"
-		}, {
+            "name": "entity.name.type.erdiagram",
+            "match": "\\b(entity|relationship|hierarchy)\\b"
+
+        }, {
             "name": "entity.name.tag.erdiagram",
-			"match": "\\b(extends|weak)\\b"
+            "match": "\\b(extends|weak)\\b"
+
         }, {
-			"name": "constant.language.erdiagram",
-			"match": "\\b(erdiagram)\\b"
-		}, {
+            "name": "constant.language.erdiagram",
+            "match": "\\b(erdiagram)\\b"
+
+        }, {
             "name": "storage.type.erdiagram",
-			"match": "\\b(notation)\\b"
+            "match": "\\b(notation)\\b"
+
         }, {
             "name": "storage.modifier.erdiagram",
-			"match": "\\b(default|bachman|crowsfoot|chen)\\b"
+            "match": "\\b(default|bachman|crowsfoot|chen)\\b"
+
         }, {
-			"name": "keyword.operator.erdiagram",
-			"match": "\\b(->|=|:)\\b"
-		}, {
-			"name": "entity.other.attribute-name.erdiagram",
-			"match": "\\b(key|derived|multivalued|optional|partial-key)\\b"
-		}, {
+            "name": "keyword.operator.erdiagram",
+            "match": "\\b(->|=|:)\\b"
+
+        }, {
+            "name": "entity.other.attribute-name.erdiagram",
+            "match": "\\b(key|derived|multivalued|optional|partial-key|unique|total|partial|disjoint|overlapping)\\b"
+
+        }, {
             "name": "string.quoted.double.erdiagram",
             "begin": "\"",
             "end": "\""
+
         }, {
             "name": "string.quoted.single.erdiagram",
             "begin": "'",
             "end": "'"
+
         }, {
             "name": "storage.type.erdiagram",
             "match": "\\+|\\#|\\~|\\-|\\b(public|private|protected|package)\\b"
         }
-	],
-	"repository": 
-        {
-            "comments": {
-                "patterns": [
-                    {
-                        "name": "comment.block.erdiagram",
-                        "begin": "/\\*",
-                        "beginCaptures": {
-                            "0": {
-                                "name": "punctuation.definition.comment.erdiagram"
-                            }
-                        },
-                        "end": "\\*/",
-                        "endCaptures": {
-                            "0": {
-                                "name": "punctuation.definition.comment.erdiagram"
-                            }
+    ],
+
+    "repository": {
+        "comments": {
+            "patterns": [
+                {
+                    "name": "comment.block.erdiagram",
+                    "begin": "/\\*",
+                    "beginCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.comment.erdiagram"
                         }
-                    }, {
-                        "begin": "(^\\s+)?(?=//)",
-                        "beginCaptures": {
-                            "1": {
-                                "name": "punctuation.whitespace.comment.leading.cs"
-                            }
-                        },
-                        "end": "(?=$)",
-                        "name":"comment.line.erdiagram"
+                    },
+                    "end": "\\*/",
+                    "endCaptures": {
+                        "0": {
+                            "name": "punctuation.definition.comment.erdiagram"
+                        }
                     }
-                ]
-            }
+
+                }, {
+                    "begin": "(^\\s+)?(?=//)",
+                    "beginCaptures": {
+                        "1": {
+                            "name": "punctuation.whitespace.comment.leading.cs"
+                        }
+                    },
+                    "end": "(?=$)",
+                    "name": "comment.line.erdiagram"
+                }
+            ]
         }
+    }
 }
