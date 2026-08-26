@@ -48,6 +48,7 @@ const DiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     configureModelElement(context, 'comp:entity-header', SCompartment, SCompartmentView);
     configureModelElement(context, 'comp:attributes', SCompartment, SCompartmentView);
     configureModelElement(context, 'comp:attribute-row', SCompartment, SCompartmentView);
+    configureModelElement(context, 'comp:hierarchy', SCompartment, SCompartmentView);
     // Edges
     configureModelElement(context, 'edge', NotationEdge, NotationEdgeView, { disable: [editFeature] });
     configureModelElement(context, 'edge:inheritance', InheritanceEdge, InheritanceEdgeView, { disable: [editFeature] });
@@ -62,6 +63,7 @@ const DiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     configureModelElement(context, 'label:bottom-right', RightRoleLabel, SLabelView);
     configureModelElement(context, 'label:bottom', RoleLabel, SLabelView);
     configureModelElement(context, 'label:text', SLabel, SLabelView, { enable: [editLabelFeature] });
+    configureModelElement(context, 'label:hierarchy', SLabel, SLabelView);
     configureModelElement(context, 'label:key', SLabel, SLabelView, { enable: [editLabelFeature] });
     configureModelElement(context, 'label:visibility', SLabel, SLabelView, { enable: [editLabelFeature] });
     configureModelElement(context, 'label:partial-key', SLabel, SLabelView, { enable: [editLabelFeature] });

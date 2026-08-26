@@ -365,7 +365,14 @@ class ERDiagramGenerator implements IDiagramGenerator {
 		if (e.extends !== null) {
 			this.extendedEntities.add(e)
 		}
+
 		val entityId = idCache.uniqueId(e, e.name)
+
+		// Obtiene la jerarquía asociada a esta entidad si es su entidad base
+		val hierarchy = model.hierarchies.findFirst[
+			it.base === e
+		]
+
 		val node = new EntityNode [
 			id = entityId
 			type = DiagramTypes.NODE_ENTITY
@@ -376,6 +383,7 @@ class ERDiagramGenerator implements IDiagramGenerator {
 			]
 			children = new ArrayList<SModelElement>
 		]
+
 		node.children.add(new SCompartment => [
 			id = idCache.uniqueId(entityId + '.header-comp')
 			type = DiagramTypes.COMP_ENTITY_HEADER
@@ -392,7 +400,7 @@ class ERDiagramGenerator implements IDiagramGenerator {
 				])
 			]
 		])
-		
+
 		/* TODO: add for UML Notation
 		if (model.notation !== null && model.notation.notationType.equals(NotationType.UML)) {
 			node.isUml = true
@@ -403,7 +411,7 @@ class ERDiagramGenerator implements IDiagramGenerator {
 				]))
 		}*/
 
-		// Create attributes if element is expanded
+		// Create attributes and hierarchy information if element is expanded
 		if (state.expandedElements.contains(entityId) || state.currentModel.type == 'NONE') {
 			val comp = new SCompartment => [
 				id = entityId + '.attributes'
@@ -415,13 +423,41 @@ class ERDiagramGenerator implements IDiagramGenerator {
 				]
 				children = new ArrayList<SModelElement>
 			]
-			comp.children.addAll(e.attributes.map[createAttributeLabels(entityId, context)])
+
+			comp.children.addAll(e.attributes.map[
+				createAttributeLabels(entityId, context)
+			])
+
 			node.children.add(comp)
+
+			// Añade las propiedades de jerarquía únicamente a la entidad base
+			if (hierarchy !== null) {
+				val hierarchyComp = new SCompartment => [
+					id = entityId + '.hierarchy'
+					type = DiagramTypes.COMP_HIERARCHY
+					layout = 'hbox'
+					layoutOptions = new LayoutOptions [
+						HAlign = 'left'
+					]
+					children = #[
+						new SLabel [
+							id = entityId + '.hierarchy.label'
+							type = DiagramTypes.LABEL_HIERARCHY
+							text = hierarchy.completeness.toString.toLowerCase + ' ' +
+							   	hierarchy.constraint.toString.toLowerCase
+						]
+					]
+				]
+
+				node.children.add(hierarchyComp)
+			}
+
 			state.expandedElements.add(entityId)
 			node.expanded = true
 		} else {
 			node.expanded = false
 		}
+
 		node.traceAndMark(e, context)
 		return node
 	}

@@ -20,9 +20,11 @@ public final class DiagramTypes {
 	public static final String COMP_ENTITY_HEADER = "comp:entity-header";
 	public static final String COMP_ATTRIBUTES = "comp:attributes";
 	public static final String COMP_ATTRIBUTE_ROW = "comp:attribute-row";
+	public static final String COMP_HIERARCHY = "comp:hierarchy";
 	
 	// labels
 	public static final String ENTITY_LABEL = "label:header";
+	public static final String LABEL_HIERARCHY = "label:hierarchy";
 	public static final String LABEL_TOP = "label:top";
 	public static final String LABEL_BOTTOM = "label:bottom";
 	public static final String LABEL_KEY = "label:key";

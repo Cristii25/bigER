@@ -2,7 +2,7 @@
 import { VNode } from "snabbdom";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { RenderingContext, svg, RectangularNodeView, SEdge, PolylineEdgeView, SGraphView,
-         IViewArgs, Hoverable, Selectable, PreRenderedView, SLabel, SLabelView } from "sprotty";
+         IViewArgs, Hoverable, Selectable, PreRenderedView, SLabel, SLabelView, SCompartment } from "sprotty";
 import { injectable } from "inversify";
 import { toDegrees, Point } from "sprotty-protocol";
 import { EntityNode, ERModel, NotationEdge, PopupButton, RelationshipNode } from "./model";
@@ -41,18 +41,82 @@ export class EntityNodeView extends RectangularNodeView {
         if (!this.isVisible(node, context)) {
             return undefined;
         }
-        const hight = node.isUml ? 58 : 38;
-        const rhombStr = "M 0," + hight + "  L " + node.bounds.width + "," + hight;
 
-        return <g>
-            {(node.weak === true) ? <rect class-border-weak={true} x="-5" y="-5" rx="5" ry="5" width={node.bounds.width + 10} height={node.bounds.height + 10}></rect> : "" }
-            <rect class-sprotty-node={true} class-mouseover={node.hoverFeedback} class-selected={node.selected}
-                x="0" y="0" rx="5" ry="5" width={Math.max(node.bounds.width, 0)} height={Math.max(node.bounds.height, 0)}>
-            </rect>
-            {context.renderChildren(node)}
-            {(node.children[1] && node.children[1].children.length > 0) ?
-                <path class-comp-separator={true} d={rhombStr}></path> : ""}
-        </g>;
+        // Altura del encabezado de la entidad
+        const headerHeight = node.isUml ? 58 : 38;
+
+        // Compartimentos del nodo:
+        // [0] cabecera
+        // [1] atributos
+        // [2] propiedades de hierarchy, si existen
+        const attributesCompartment = node.children[1] as Readonly<SCompartment> | undefined;
+        const hierarchyCompartment = node.children[2] as Readonly<SCompartment> | undefined;
+
+        const hasAttributes =
+            !!attributesCompartment &&
+            attributesCompartment.children.length > 0;
+
+        const hasHierarchy =
+            !!hierarchyCompartment &&
+            hierarchyCompartment.type === "comp:hierarchy";
+
+        // Separador entre cabecera y contenido
+        const headerSeparator =
+            `M 0,${headerHeight} L ${node.bounds.width},${headerHeight}`;
+
+        // Separador entre atributos y propiedades de hierarchy
+        let hierarchySeparator = "";
+
+        if (hasHierarchy && hierarchyCompartment) {
+            hierarchySeparator =
+                `M 0,${hierarchyCompartment.bounds.y} L ${node.bounds.width},${hierarchyCompartment.bounds.y}`;
+        }
+
+        return (
+            <g>
+                {node.weak === true && (
+                    <rect
+                        class-border-weak={true}
+                        x="-5"
+                        y="-5"
+                        rx="5"
+                        ry="5"
+                        width={node.bounds.width + 10}
+                        height={node.bounds.height + 10}
+                    />
+                )}
+
+                <rect
+                    class-sprotty-node={true}
+                    class-mouseover={node.hoverFeedback}
+                    class-selected={node.selected}
+                    x="0"
+                    y="0"
+                    rx="5"
+                    ry="5"
+                    width={Math.max(node.bounds.width, 0)}
+                    height={Math.max(node.bounds.height, 0)}
+                />
+
+                {context.renderChildren(node)}
+
+                {/* Separador entre cabecera y contenido */}
+                {(hasAttributes || hasHierarchy) && (
+                    <path
+                        class-comp-separator={true}
+                        d={headerSeparator}
+                    />
+                )}
+
+                {/* Separador entre atributos y propiedades de hierarchy */}
+                {hasHierarchy && (
+                    <path
+                        class-comp-separator={true}
+                        d={hierarchySeparator}
+                    />
+                )}
+            </g>
+        );
     }
 }
 
