@@ -1,0 +1,49 @@
+{
+  "name": "bigER (ER modeling tool - LSP + VS Code extension)",
+
+  // Imagen base ligera de Ubuntu Jammy; las features añaden JDK, Node y Docker-in-Docker no hace falta.
+  "image": "mcr.microsoft.com/devcontainers/base:jammy",
+
+  "features": {
+    // JDK 11 requerido por el language-server (Xtext/Xtend, Gradle).
+    // jdkDistro fijado a "tem" (Eclipse Temurin): el distribuidor por
+    // defecto "ms" (Microsoft Build of OpenJDK) no publica JDK 11 para
+    // todas las arquitecturas (falla, por ejemplo, en Mac Apple Silicon/arm64).
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "11",
+      "jdkDistro": "tem",
+      "installGradle": false // se usa el gradlew del repo, no hace falta instalar Gradle aparte
+    },
+    // Node >=16 requerido por webview/extension. Se usa 18 LTS.
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18",
+      "nodeGypDependencies": true
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "vscjava.vscode-java-pack",   // soporte Java útil para tocar el language-server
+        "amodio.tsl-problem-matcher", // problem matcher usado por launch.json de extensiones VS Code
+        "ms-vscode.extension-test-runner"
+      ],
+      "settings": {
+        "java.jdt.ls.java.home": "/usr/local/sdkman/candidates/java/current",
+        "java.import.gradle.java.home": "/usr/local/sdkman/candidates/java/current"
+      }
+    }
+  },
+
+  // Cachea Gradle y el store de Yarn entre reconstrucciones del contenedor
+  "mounts": [
+    "source=biger-gradle-cache,target=/home/vscode/.gradle,type=volume",
+    "source=biger-yarn-cache,target=/home/vscode/.cache/yarn,type=volume"
+  ],
+
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+
+  "remoteUser": "vscode"
+}
