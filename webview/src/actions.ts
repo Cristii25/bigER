@@ -9,7 +9,9 @@ export interface CreateElementEditAction extends Action {
     kind: typeof CreateElementEditAction.KIND
     elementType: string
 }
+
 export namespace CreateElementEditAction {
+
     export const KIND = 'createElementEdit';
 
     export function create(elementType: string): CreateElementEditAction {
@@ -27,7 +29,9 @@ export interface ChangeNotationAction {
     kind: typeof ChangeNotationAction.KIND
     notation: string
 }
+
 export namespace ChangeNotationAction {
+
     export const KIND = 'changeNotation';
 
     export function create(notation: string): ChangeNotationAction {
@@ -42,13 +46,38 @@ export interface AddAttributeAction {
     kind: typeof AddAttributeAction.KIND
     elementId: string
 }
+
 export namespace AddAttributeAction {
+
     export const KIND = 'addAttribute';
 
     export function create(elementId: string): AddAttributeAction {
         return {
             kind: KIND,
             elementId
+        };
+    }
+}
+
+/**
+ * Acción utilizada para editar una propiedad de la jerarquía
+ * asociada a una entidad base.
+ */
+export interface EditHierarchyAction {
+    kind: typeof EditHierarchyAction.KIND
+    elementId: string
+    property: string
+}
+
+export namespace EditHierarchyAction {
+
+    export const KIND = 'editHierarchy';
+
+    export function create(elementId: string, property: string): EditHierarchyAction {
+        return {
+            kind: KIND,
+            elementId,
+            property
         };
     }
 }

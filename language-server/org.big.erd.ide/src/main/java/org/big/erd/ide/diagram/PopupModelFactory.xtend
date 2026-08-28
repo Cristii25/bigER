@@ -13,6 +13,8 @@ import org.eclipse.sprotty.xtext.ILanguageAwareDiagramServer
 import org.eclipse.sprotty.xtext.tracing.ITraceProvider
 import org.big.erd.entityRelationship.Entity
 import org.big.erd.entityRelationship.Relationship
+import org.big.erd.entityRelationship.Model
+import org.big.erd.entityRelationship.Hierarchy
 import java.util.ArrayList
 import org.big.erd.entityRelationship.DataType
 
@@ -76,58 +78,133 @@ class PopupModelFactory implements IPopupModelFactory {
 	protected def createPopup(EObject semanticElement, SModelElement element, RequestPopupModelAction request) {
 		val popupId = element.id + '-popup'
 		val issueMarker = element.children?.filter(SIssueMarker)?.head
-		var htmlRoot = new HtmlRoot [
-			id = popupId
-			children = #[
-				new PreRenderedElement [
-					id = popupId + '-body'
-					children = new ArrayList<SModelElement>
-					code = '''
-						<div class="sprotty-infoBlock">
-						«IF issueMarker !== null»
-							«getIssueRow(issueMarker)»
-						«ENDIF»
-						«getHeader(semanticElement)»
-						</div>
-					'''
-				],
+		var hierarchy = null as Hierarchy
+
+		// Busca la jerarquía asociada cuando la entidad seleccionada es una entidad base.
+		if (semanticElement instanceof Entity) {
+			val model = semanticElement.eContainer
+			if (model instanceof Model) {
+				hierarchy = model.hierarchies.findFirst[
+					base === semanticElement
+				]
+			}
+		}
+
+		val popupChildren = new ArrayList<SModelElement>
+
+		popupChildren.add(
+			new PreRenderedElement [
+				id = popupId + '-body'
+				children = new ArrayList<SModelElement>
+				code = '''
+					<div class="sprotty-infoBlock">
+					«IF issueMarker !== null»
+						«getIssueRow(issueMarker)»
+					«ENDIF»
+					«getHeader(semanticElement)»
+					</div>
+				'''
+			]
+		)
+
+		popupChildren.add(
+			new PopupButton [
+				id = popupId + '-editButton'
+				type = 'button:edit'
+				target = element.id + '.label'
+				kind = 'edit'
+				code = '''
+					<button type="button" class="popup-button">
+						<span class="codicon codicon-edit"></span>
+						<span class="popup-button-label">Rename</span>
+					</button>
+				'''
+			]
+		)
+
+		popupChildren.add(
+			new PopupButton [
+				id = popupId + '-deleteButton'
+				type = 'button:delete'
+				target = element.id
+				kind = 'delete'
+				code = '''
+					<button type="button" class="popup-button">
+						<span class="codicon codicon-trash"></span>
+						<span class="popup-button-label">Delete</span>
+					</button>
+				'''
+			]
+		)
+
+		popupChildren.add(
+			new PopupButton [
+				id = popupId + '-addAttributeButton'
+				type = 'button:addAttribute'
+				target = element.id
+				kind = 'addAttribute'
+				code = '''
+					<button type="button" class="popup-button">
+						<span class="codicon codicon-add"></span>
+						<span class="popup-button-label">Add Attribute</span>
+					</button>
+				'''
+			]
+		)
+
+		// Los controles de jerarquía solo se muestran para entidades base
+		// que tengan una declaración hierarchy asociada.
+		if (hierarchy !== null) {
+
+			// El texto del botón muestra siempre el valor alternativo disponible.
+			val completenessLabel =
+				if (hierarchy.completeness.literal === 'total')
+					'Set Partial'
+				else
+					'Set Total'
+
+			val constraintLabel =
+				if (hierarchy.constraint.literal === 'disjoint')
+					'Set Overlapping'
+				else
+					'Set Disjoint'
+
+			// Botón para alternar entre jerarquía total y parcial.
+			popupChildren.add(
 				new PopupButton [
-					id = popupId + '-editButton'
-					type = 'button:edit'
-					target = element.id + '.label'
-					kind = 'edit'
+					id = popupId + '-hierarchyCompletenessButton'
+					type = 'button:toggleHierarchyCompleteness'
+					target = element.id
+					kind = 'toggleHierarchyCompleteness'
 					code = '''
 						<button type="button" class="popup-button">
 							<span class="codicon codicon-edit"></span>
-							<span class="popup-button-label">Rename</span>
-						</button>
-					'''
-				],
-				new PopupButton [
-					id = popupId + '-deleteButton'
-					type = 'button:delete'
-					target = element.id
-					kind = 'delete'
-					code = '''
-						<button type="button" class="popup-button">
-							<span class="codicon codicon-trash"></span>
-							<span class="popup-button-label">Delete</span>
-						</button>
-					'''
-				],
-				new PopupButton [
-					id = popupId + '-addAttributeButton'
-					type = 'button:addAttribute'
-					target = element.id
-					kind = 'addAttribute'
-					code = '''
-						<button type="button" class="popup-button">
-							<span class="codicon codicon-add"></span>
-							<span class="popup-button-label">Add Attribute</span>
+							<span class="popup-button-label">«completenessLabel»</span>
 						</button>
 					'''
 				]
-			]
+			)
+
+			// Botón para alternar entre jerarquía disjunta y solapada.
+			popupChildren.add(
+				new PopupButton [
+					id = popupId + '-hierarchyConstraintButton'
+					type = 'button:toggleHierarchyConstraint'
+					target = element.id
+					kind = 'toggleHierarchyConstraint'
+					code = '''
+						<button type="button" class="popup-button">
+							<span class="codicon codicon-edit"></span>
+							<span class="popup-button-label">«constraintLabel»</span>
+						</button>
+					'''
+				]
+			)
+		}
+
+		val htmlRoot = new HtmlRoot [
+			id = popupId
+			children = popupChildren
 			canvasBounds = request.bounds
 		]
 

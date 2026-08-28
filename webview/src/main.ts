@@ -28,6 +28,9 @@ export class ERDiagramSprottyStarter extends SprottyLspEditStarter {
         configureModelElement(container, 'button:delete', PopupButton, PopupButtonView);
         configureModelElement(container, 'button:edit', PopupButton, PopupButtonView);
         configureModelElement(container, 'button:addAttribute', PopupButton, PopupButtonView);
+        // Registra los botones del popup utilizados para editar las propiedades de jerarquía.
+        configureModelElement(container, 'button:toggleHierarchyCompleteness', PopupButton, PopupButtonView);
+        configureModelElement(container, 'button:toggleHierarchyConstraint', PopupButton, PopupButtonView);
     }
 }
 

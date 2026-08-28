@@ -2,7 +2,7 @@ import { EditLabelAction, EMPTY_ROOT, MouseListener } from "sprotty";
 import { Action, SelectAction, SelectAllAction, SetPopupModelAction, SModelElement } from "sprotty-protocol";
 import { DeleteWithWorkspaceEditAction } from 'sprotty-vscode-protocol/lib/lsp/editing';
 import { PopupButton } from "./model";
-import { AddAttributeAction } from "./actions";
+import { AddAttributeAction, EditHierarchyAction } from "./actions";
 
 export class PopupButtonListener extends MouseListener {
 
@@ -13,6 +13,7 @@ export class PopupButtonListener extends MouseListener {
 
         const actions: Action[] = [];
         actions.push(SetPopupModelAction.create(EMPTY_ROOT));
+
         switch (target.kind) {
             case 'delete': {
                 this.handleDelete(target, actions);
@@ -24,6 +25,16 @@ export class PopupButtonListener extends MouseListener {
             }
             case 'addAttribute': {
                 actions.push(AddAttributeAction.create(target.target));
+                break;
+            }
+            case 'toggleHierarchyCompleteness': {
+                // Solicita alternar la jerarquía entre total y parcial.
+                actions.push(EditHierarchyAction.create(target.target, 'completeness'));
+                break;
+            }
+            case 'toggleHierarchyConstraint': {
+                // Solicita alternar la jerarquía entre disjunta y solapada.
+                actions.push(EditHierarchyAction.create(target.target, 'constraint'));
                 break;
             }
         }

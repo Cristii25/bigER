@@ -9,13 +9,16 @@ import org.big.erd.ide.diagram.actions.NotationHandler
 import org.big.erd.ide.diagram.actions.ChangeNotationAction
 import org.big.erd.ide.diagram.actions.CreateElementEditAction
 import org.big.erd.ide.diagram.actions.AddAttributeAction
-
+import org.big.erd.ide.diagram.actions.EditHierarchyAction
+import org.big.erd.ide.diagram.actions.EditHierarchyHandler
 
 class ERDiagramServer extends LanguageAwareDiagramServer {
 
 	@Inject NotationHandler notationHandler
 	@Inject CreateElementHandler createElementHandler
 	@Inject AddAttributeHandler addAttributeHandler
+	// Handler encargado de aplicar las modificaciones de las propiedades de jerarquía.
+	@Inject EditHierarchyHandler editHierarchyHandler
 
 	override protected handleAction(Action action) {
 		if (action.kind === ChangeNotationAction.KIND) {
@@ -24,9 +27,11 @@ class ERDiagramServer extends LanguageAwareDiagramServer {
 			createElementHandler.handle(action as CreateElementEditAction, this)
 		} else if (action.kind === AddAttributeAction.KIND) {
 			addAttributeHandler.handle(action as AddAttributeAction, this)
+		// Delega las acciones de edición de jerarquía en su handler específico.
+		} else if (action.kind === EditHierarchyAction.KIND) {
+			editHierarchyHandler.handle(action as EditHierarchyAction, this)
 		} else {
 			super.handleAction(action)
 		}
 	}
-
 }

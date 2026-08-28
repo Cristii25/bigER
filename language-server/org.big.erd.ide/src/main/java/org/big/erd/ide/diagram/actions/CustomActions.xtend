@@ -16,6 +16,8 @@ class CustomActionTypeAdapterFactory extends EditActionTypeAdapterFactory {
 		addActionKind(ChangeNotationAction.KIND, ChangeNotationAction)
 		addActionKind(CreateElementEditAction.KIND, CreateElementEditAction)
 		addActionKind(AddAttributeAction.KIND, AddAttributeAction)
+		// Registra la acción utilizada para editar las propiedades de una jerarquía.
+		addActionKind(EditHierarchyAction.KIND, EditHierarchyAction)
 	}
 }
 
@@ -66,6 +68,27 @@ class AddAttributeAction implements Action {
 	new() { }
 
 	new(Consumer<AddAttributeAction> initializer) {
+		initializer.accept(this)
+	}
+}
+
+/**
+ * Acción que permite modificar las propiedades de una jerarquía.
+ * property indica si se edita completeness o constraint.
+ */
+@Accessors
+@EqualsHashCode
+@ToString(skipNulls=true)
+class EditHierarchyAction implements Action {
+
+	public static val KIND = 'editHierarchy'
+	String kind = KIND
+	String elementId
+	String property
+
+	new() { }
+
+	new(Consumer<EditHierarchyAction> initializer) {
 		initializer.accept(this)
 	}
 }
