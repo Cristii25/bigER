@@ -1,0 +1,25 @@
+erdiagram AssociativeEntityValidation
+
+// Entidades estándar utilizadas como referencia
+entity Student {
+    id: INT key
+    name: STRING
+}
+
+entity Course {
+    id: INT key
+    name: STRING
+}
+
+// Entidad asociativa definida explícitamente 
+// mediante el modificador associative
+associative entity Enrollment {
+    enrollment_id: INT key
+    date: DATE
+}
+
+// Entidad débil para comprobar que la 
+// sintaxis existente sigue siendo válida
+weak entity WeakEntity {
+    code: INT partial-key
+}

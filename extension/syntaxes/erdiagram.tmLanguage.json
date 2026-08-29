@@ -17,7 +17,7 @@
 
         }, {
             "name": "entity.name.tag.erdiagram",
-            "match": "\\b(extends|weak)\\b"
+            "match": "\\b(extends|weak|associative)\\b"
 
         }, {
             "name": "constant.language.erdiagram",

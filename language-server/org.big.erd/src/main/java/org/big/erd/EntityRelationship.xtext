@@ -16,7 +16,7 @@ NotationOption:
 	'notation' '=' notationType=NotationType;
 
 Entity:
-	(weak?='weak')? 'entity' name=ID ('extends' extends=[Entity])? '{'
+	(weak?='weak' | associative?='associative')? 'entity' name=ID ('extends' extends=[Entity])? '{'
 		(attributes += Attribute)*
 	'}';
 
