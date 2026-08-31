@@ -8,7 +8,10 @@ export class ERModel extends SGraph {
 
 export class EntityNode extends RectangularNode {
     expanded: boolean;
+    // Indica si el nodo representa una entidad débil
     weak: boolean;
+    // Indica si el nodo representa una entidad asociativa
+    associative: boolean;
     isUml: boolean;
 }
 

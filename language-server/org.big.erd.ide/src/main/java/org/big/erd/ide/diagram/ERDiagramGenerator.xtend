@@ -376,7 +376,11 @@ class ERDiagramGenerator implements IDiagramGenerator {
 		val node = new EntityNode [
 			id = entityId
 			type = DiagramTypes.NODE_ENTITY
+			// Propaga al modelo gráfico si la entidad es débil
 			weak = e.weak ? true : false
+			// Propaga al modelo gráfico si la entidad es asociativa
+			associative = e.associative ? true : false
+
 			layout = 'vbox'
 			layoutOptions = new LayoutOptions [
 				VGap = 10.0
@@ -418,7 +422,8 @@ class ERDiagramGenerator implements IDiagramGenerator {
 				type = DiagramTypes.COMP_ATTRIBUTES
 				layout = 'vbox'
 				layoutOptions = new LayoutOptions [
-					HAlign = 'left'
+					// Los atributos de las entidades asociativas se centran dentro del rombo
+					HAlign = if (e.associative) 'center' else 'left'
 					VGap = 1.0
 				]
 				children = new ArrayList<SModelElement>

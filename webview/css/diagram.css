@@ -150,6 +150,17 @@ text {
     fill: black;
 }
 
+/*
+Representa las entidades asociativas mediante un rombo
+dentro del rectángulo de la entidad.
+*/
+.associative-diamond {
+    fill: none;
+    stroke: var(--vscode-list-deemphasizedForeground);
+    stroke-width: 1;
+    pointer-events: none;
+}
+
 .visibility {
     fill: #569cd6;
 }

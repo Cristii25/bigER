@@ -45,6 +45,22 @@ export class EntityNodeView extends RectangularNodeView {
         // Altura del encabezado de la entidad
         const headerHeight = node.isUml ? 58 : 38;
 
+        const width = Math.max(node.bounds.width, 0);
+        const height = Math.max(node.bounds.height, 0);
+
+        // El rombo ocupa prácticamente toda la entidad asociativa
+        const associativePaddingX = 3;
+        const associativePaddingY = 3;
+
+        const associativeCenterX = width / 2;
+        const associativeCenterY = height / 2;
+
+        const associativeDiamondPoints =
+            `${associativeCenterX},${associativePaddingY} ` +
+            `${width - associativePaddingX},${associativeCenterY} ` +
+            `${associativeCenterX},${height - associativePaddingY} ` +
+            `${associativePaddingX},${associativeCenterY}`;
+
         // Compartimentos del nodo:
         // [0] cabecera
         // [1] atributos
@@ -94,9 +110,17 @@ export class EntityNodeView extends RectangularNodeView {
                     y="0"
                     rx="5"
                     ry="5"
-                    width={Math.max(node.bounds.width, 0)}
-                    height={Math.max(node.bounds.height, 0)}
+                    width={width}
+                    height={height}
                 />
+
+                {/* Rombo interior utilizado para representar entidades asociativas */}
+                {node.associative === true && (
+                    <polygon
+                        class-associative-diamond={true}
+                        points={associativeDiamondPoints}
+                    />
+                )}
 
                 {context.renderChildren(node)}
 

@@ -20,7 +20,10 @@ class ERModel extends SGraph {
 @Accessors
 class EntityNode extends SNode {
 	boolean expanded
+	// Indica si la entidad debe representarse como entidad débil
 	boolean weak
+	// Indica si la entidad debe representarse como entidad asociativa
+	boolean associative
 	boolean isUml
 
 	new() { }
