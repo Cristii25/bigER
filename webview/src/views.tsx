@@ -311,9 +311,9 @@ export class RelationshipNodeView extends RectangularNodeView {
             {title}
           </text>
 
-        {/* Flecha de expandir/colapsar colocada junto al título */}
+        {/* Flecha de expandir/colapsar centrada encima del título */}
         {expandButton && (
-            <g transform={`translate(${cx + 30}, ${titleYRel - 8})`}>
+            <g transform={`translate(${cx - 8}, ${titleYRel - 23})`}>
                 {context.renderElement(expandButton)}
             </g>
         )}

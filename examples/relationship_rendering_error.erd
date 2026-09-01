@@ -1,0 +1,80 @@
+erdiagram Model
+
+notation=crowsfoot
+
+// --------------------------------------------------
+// Caso original utilizado para reproducir el error
+// --------------------------------------------------
+
+entity Empleado {
+    id_empleado key
+    dni //UNIQUE
+    nombre
+    apellido_1
+    apellido_2
+}
+
+entity Departamento {
+    id_departamento key
+    nombre
+}
+
+weak entity Historial_Departamento {
+    fecha_inicio partial-key
+}
+
+weak relationship ha_trabajado {
+    Empleado[1..1] -> Historial_Departamento[0..N]
+    fecha_inicio
+    fecha_fin
+}
+
+relationship pertenece_a {
+    Historial_Departamento[0..N] -> Departamento[1..1]
+}
+
+
+// --------------------------------------------------
+// Casos adicionales para validar nombres y tamaños
+// --------------------------------------------------
+entity Entidad_con_nombre_largo_1 {
+    id key
+}
+entity Entity2 {
+    id key
+}
+entity Entity3 {
+    id key
+}
+entity Entity4 {
+    id key
+}
+entity Entity5 {
+    id key
+}
+entity Entity6 {
+    id key
+}
+entity Entity7 {
+    id key
+}
+entity Entity8 {
+    id key
+}
+// Relación con nombre largo y atributo
+relationship relacion_con_nombre_muy_largo_1 {
+    Entidad_con_nombre_largo_1[0..1] -> Entity2[1]
+    atributo_de_relacion_larga_1
+}
+// Relación corta 1..1
+relationship Rel2 {
+    Entity3[1..1] -> Entity4[1]
+}
+// Relación corta 0..N
+relationship Rel3 {
+    Entity5[0..N] -> Entity6[1..N]
+}
+// Relación corta 1..N
+relationship Rel4 {
+    Entity7[1..N] -> Entity8[N]
+}
