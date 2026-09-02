@@ -12,7 +12,6 @@ import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.big.erd.validation.EntityRelationshipValidator
 import static org.big.erd.entityRelationship.EntityRelationshipPackage.Literals.*
 
-
 @ExtendWith(InjectionExtension)
 @InjectWith(EntityRelationshipInjectorProvider)
 class ErValidatorTest {
@@ -70,7 +69,7 @@ class ErValidatorTest {
 	}
 
 	@Test
-	def void testInvalidHierarchyBase() {
+	def void testHierarchyWithoutSubclasses() {
 		val model = parseHelper.parse('''
 			erdiagram Model
 
@@ -78,7 +77,203 @@ class ErValidatorTest {
 				id key
 			}
 
-			hierarchy Product total disjoint
+			hierarchy h_product Product partial
+		''')
+
+		validationTestHelper.assertError(
+			model.eResource(),
+			HIERARCHY,
+			EntityRelationshipValidator.HIERARCHY_WITHOUT_SUBCLASSES
+		)
+	}
+
+	@Test
+	def void testSingleSubclassHierarchyMustBePartial() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			entity Person {
+				id key
+			}
+
+			hierarchy h_employee Person total
+
+			entity Employee extends h_employee {
+				id key
+			}
+		''')
+
+		validationTestHelper.assertError(
+			model.eResource(),
+			HIERARCHY,
+			EntityRelationshipValidator.INVALID_SINGLE_SUBCLASS_HIERARCHY
+		)
+	}
+
+	@Test
+	def void testSingleSubclassHierarchyCannotHaveConstraint() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			entity Person {
+				id key
+			}
+
+			hierarchy h_employee Person partial disjoint
+
+			entity Employee extends h_employee {
+				id key
+			}
+		''')
+
+		validationTestHelper.assertError(
+			model.eResource(),
+			HIERARCHY,
+			EntityRelationshipValidator.INVALID_SINGLE_SUBCLASS_HIERARCHY
+		)
+	}
+
+	@Test
+	def void testMultipleSubclassesRequireConstraint() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			entity Person {
+				id key
+			}
+
+			hierarchy h_person Person partial
+
+			entity Employee extends h_person {
+				id key
+			}
+
+			entity Customer extends h_person {
+				id key
+			}
+		''')
+
+		validationTestHelper.assertError(
+			model.eResource(),
+			HIERARCHY,
+			EntityRelationshipValidator.MISSING_HIERARCHY_CONSTRAINT
+		)
+	}
+
+	@Test
+	def void testMultipleHierarchiesCanHaveSameBase() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			entity Employee {
+				id key
+			}
+
+			hierarchy h_job Employee partial
+			hierarchy h_management Employee partial
+
+			entity Technician extends h_job {
+				id key
+			}
+
+			entity Manager extends h_management {
+				id key
+			}
+		''')
+
+		validationTestHelper.assertNoErrors(model)
+	}
+
+	@Test
+	def void testMultilevelHierarchyIsValid() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			entity Person {
+				id key
+			}
+
+			hierarchy h_person Person partial
+
+			entity Employee extends h_person {
+				id key
+			}
+
+			hierarchy h_employee Employee partial
+
+			entity Developer extends h_employee {
+				id key
+			}
+		''')
+
+		validationTestHelper.assertNoErrors(model)
+	}
+
+	@Test
+	def void testSubclassMustDeclareSameKeyAsSuperclass() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			entity Person {
+				id key
+			}
+
+			hierarchy h_person Person partial
+
+			entity Employee extends h_person {
+				employee_id key
+			}
+		''')
+
+		validationTestHelper.assertError(
+			model.eResource(),
+			ENTITY,
+			EntityRelationshipValidator.INVALID_SUBCLASS_KEY
+		)
+	}
+
+	@Test
+	def void testDuplicateHierarchyName() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			entity Person {
+				id key
+			}
+
+			entity Employee {
+				id key
+			}
+
+			hierarchy h_type Person partial
+			hierarchy h_type Employee partial
+
+			entity Customer extends h_type {
+				id key
+			}
+		''')
+
+		validationTestHelper.assertError(
+			model.eResource(),
+			HIERARCHY,
+			EntityRelationshipValidator.DUPLICATE_HIERARCHY_NAME
+		)
+	}
+
+	@Test
+	def void testWeakEntityCannotBeHierarchyBase() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			weak entity WeakEntity {
+				id
+			}
+
+			hierarchy h_weak WeakEntity partial
+
+			entity Child extends h_weak {
+				id key
+			}
 		''')
 
 		validationTestHelper.assertError(
@@ -86,56 +281,29 @@ class ErValidatorTest {
 			HIERARCHY,
 			EntityRelationshipValidator.INVALID_HIERARCHY_BASE
 		)
-	}
+	}	
 
 	@Test
-	def void testInvalidHierarchyRoot() {
+	def void testHierarchyCycle() {
 		val model = parseHelper.parse('''
 			erdiagram Model
 
-			entity Person {
+			entity EntityA extends h_b {
 				id key
 			}
 
-			entity Employee extends Person {
-				employee_id key
+			entity EntityB extends h_a {
+				id key
 			}
 
-			entity DeveloperEmployee extends Employee {
-				developer_employee_id key
-			}
-
-			hierarchy Employee partial disjoint
+			hierarchy h_a EntityA partial
+			hierarchy h_b EntityB partial
 		''')
 
 		validationTestHelper.assertError(
 			model.eResource(),
 			HIERARCHY,
-			EntityRelationshipValidator.INVALID_HIERARCHY_ROOT
-		)
-	}
-
-	@Test
-	def void testDuplicateHierarchy() {
-		val model = parseHelper.parse('''
-			erdiagram Model
-
-			entity Person {
-				id key
-			}
-
-			entity Employee extends Person {
-				employee_id key
-			}
-
-			hierarchy Person total disjoint
-			hierarchy Person partial overlapping
-		''')
-
-		validationTestHelper.assertError(
-			model.eResource(),
-			HIERARCHY,
-			EntityRelationshipValidator.DUPLICATE_HIERARCHY
+			EntityRelationshipValidator.INVALID_HIERARCHY_CYCLE
 		)
 	}
 }

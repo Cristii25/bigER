@@ -12,9 +12,8 @@ import org.eclipse.sprotty.xtext.tracing.PositionConverter
 import org.eclipse.xtext.resource.ILocationInFileProvider
 import org.eclipse.xtext.ide.server.ILanguageServerAccess
 import org.eclipse.xtext.ide.server.UriExtensions
-import org.big.erd.entityRelationship.Entity
-import org.big.erd.entityRelationship.Model
-import org.big.erd.ide.diagram.EntityNode
+import org.big.erd.entityRelationship.Hierarchy
+import org.big.erd.ide.diagram.HierarchyNode
 
 import static org.big.erd.entityRelationship.EntityRelationshipPackage.Literals.*
 
@@ -25,32 +24,24 @@ class EditHierarchyHandler {
 	@Inject UriExtensions uriExtensions
 
 	/**
-	 * Gestiona la edición de las propiedades de jerarquía desde el diagrama.
+	 * Gestiona la edición de las propiedades de jerarquía
+	 * directamente desde el nodo de la jerarquía.
 	 */
 	def handle(EditHierarchyAction action, ILanguageAwareDiagramServer server) {
 
-		val root = server.diagramState.currentModel
 		val node = new SModelIndex(server.model).get(action.elementId)
 
-		if (node !== null && node instanceof EntityNode) {
+		if (node !== null && node instanceof HierarchyNode) {
 
-			server.diagramLanguageServer.languageServerAccess.doRead(server.sourceUri, [ context |
+			server.diagramLanguageServer.languageServerAccess.doRead(
+				server.sourceUri,
+				[ context |
 
-				val resolvedModel = root.resolveElement(context)
-				val resolvedEntity = node.resolveElement(context)
+					val resolvedHierarchy = node.resolveElement(context)
 
-				if (resolvedModel instanceof Model && resolvedEntity instanceof Entity) {
+					if (resolvedHierarchy instanceof Hierarchy) {
 
-					val model = resolvedModel as Model
-					val entity = resolvedEntity as Entity
-
-					// Localiza la jerarquía cuya entidad base es la entidad seleccionada.
-					val hierarchy = model.hierarchies.findFirst[
-						it.base === entity
-					]
-
-					if (hierarchy !== null) {
-
+						val hierarchy = resolvedHierarchy as Hierarchy
 						val textEdits = newArrayList
 
 						// Alterna la completitud entre total y partial.
@@ -62,7 +53,11 @@ class EditHierarchyHandler {
 								-1
 							)
 
-							val startPosition = toPosition(textRegion.offset, hierarchy)
+							val startPosition = toPosition(
+								textRegion.offset,
+								hierarchy
+							)
+
 							val endPosition = toPosition(
 								textRegion.offset + textRegion.length,
 								hierarchy
@@ -88,7 +83,11 @@ class EditHierarchyHandler {
 								-1
 							)
 
-							val startPosition = toPosition(textRegion.offset, hierarchy)
+							val startPosition = toPosition(
+								textRegion.offset,
+								hierarchy
+							)
+
 							val endPosition = toPosition(
 								textRegion.offset + textRegion.length,
 								hierarchy
@@ -110,7 +109,9 @@ class EditHierarchyHandler {
 						if (!textEdits.empty) {
 
 							val workspaceEdit = new WorkspaceEdit() => [
-								changes = #{server.sourceUri -> textEdits}
+								changes = #{
+									server.sourceUri -> textEdits
+								}
 							]
 
 							server.dispatch(
@@ -120,17 +121,23 @@ class EditHierarchyHandler {
 							)
 						}
 					}
-				}
 
-				return null
-			])
+					return null
+				]
+			)
 		}
 	}
 
-	private def resolveElement(SModelElement sElement, ILanguageServerAccess.Context context) {
+	private def resolveElement(
+		SModelElement sElement,
+		ILanguageServerAccess.Context context
+	) {
 		if (sElement.trace !== null) {
 			val elementURI = sElement.trace.toURI
-			return context.resource.resourceSet.getEObject(elementURI, true)
+			return context.resource.resourceSet.getEObject(
+				elementURI,
+				true
+			)
 		} else {
 			return null
 		}
@@ -140,8 +147,13 @@ class EditHierarchyHandler {
 		val parts = path.split('#')
 
 		if (parts.size !== 2)
-			throw new IllegalArgumentException('Invalid trace URI ' + path)
+			throw new IllegalArgumentException(
+				'Invalid trace URI ' + path
+			)
 
-		return uriExtensions.toUri(parts.head).trimQuery.appendFragment(parts.last)
+		return uriExtensions
+			.toUri(parts.head)
+			.trimQuery
+			.appendFragment(parts.last)
 	}
 }

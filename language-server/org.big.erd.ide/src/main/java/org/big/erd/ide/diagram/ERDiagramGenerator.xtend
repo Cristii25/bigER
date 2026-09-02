@@ -1,5 +1,4 @@
 package org.big.erd.ide.diagram
-
 import com.google.inject.Inject
 import org.big.erd.entityRelationship.Entity
 import org.big.erd.entityRelationship.Attribute
@@ -31,6 +30,9 @@ import org.eclipse.sprotty.SCompartment
 import org.big.erd.entityRelationship.CardinalityType
 import org.big.erd.entityRelationship.NotationType
 import org.big.erd.entityRelationship.RelationshipType
+import org.big.erd.entityRelationship.Hierarchy
+import org.big.erd.ide.diagram.HierarchyNode
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 
 import static org.big.erd.entityRelationship.EntityRelationshipPackage.Literals.*
 
@@ -44,7 +46,6 @@ class ERDiagramGenerator implements IDiagramGenerator {
 
 	IDiagramState state
 	Model model
-	List<Entity> extendedEntities
 
 	override generate(Context context) {
 		this.state = context.state
@@ -65,11 +66,16 @@ class ERDiagramGenerator implements IDiagramGenerator {
 			notation = notationType.toString
 			children = new ArrayList<SModelElement>
 		]
-		// Create entity nodes and inheritance edges
-		extendedEntities = new ArrayList<Entity>
+
+		// Create entity nodes
 		graph.children.addAll(m.entities.map[toSNode(context)])
-		graph.children.addAll(extendedEntities.map[inheritanceEdges(context)])
-		
+
+		// Create hierarchy nodes and edges
+		graph.children.addAll(m.hierarchies.map[toHierarchyNode(context)])
+		m.hierarchies.forEach[
+			graph.children.addAll(hierarchyEdges(it, context))
+		]
+	
 		// Create relationship nodes and edges
 		m.relationships.forEach[
 			if (!notationType.equals(NotationType.UML)) {
@@ -362,16 +368,7 @@ class ERDiagramGenerator implements IDiagramGenerator {
 	}
 
 	def EntityNode toSNode(Entity e, extension Context context) {
-		if (e.extends !== null) {
-			this.extendedEntities.add(e)
-		}
-
 		val entityId = idCache.uniqueId(e, e.name)
-
-		// Obtiene la jerarquía asociada a esta entidad si es su entidad base
-		val hierarchy = model.hierarchies.findFirst[
-			it.base === e
-		]
 
 		val node = new EntityNode [
 			id = entityId
@@ -411,7 +408,7 @@ class ERDiagramGenerator implements IDiagramGenerator {
 				]))
 		}*/
 
-		// Create attributes and hierarchy information if element is expanded
+		// Create attributes if element is expanded
 		if (state.expandedElements.contains(entityId) || state.currentModel.type == 'NONE') {
 			val comp = new SCompartment => [
 				id = entityId + '.attributes'
@@ -430,28 +427,6 @@ class ERDiagramGenerator implements IDiagramGenerator {
 
 			node.children.add(comp)
 
-			// Añade las propiedades de jerarquía únicamente a la entidad base
-			if (hierarchy !== null) {
-				val hierarchyComp = new SCompartment => [
-					id = entityId + '.hierarchy'
-					type = DiagramTypes.COMP_HIERARCHY
-					layout = 'hbox'
-					layoutOptions = new LayoutOptions [
-						HAlign = 'left'
-					]
-					children = #[
-						new SLabel [
-							id = entityId + '.hierarchy.label'
-							type = DiagramTypes.LABEL_HIERARCHY
-							text = hierarchy.completeness.toString.toLowerCase + ' ' +
-							   	hierarchy.constraint.toString.toLowerCase
-						]
-					]
-				]
-
-				node.children.add(hierarchyComp)
-			}
-
 			state.expandedElements.add(entityId)
 			node.expanded = true
 		} else {
@@ -460,6 +435,62 @@ class ERDiagramGenerator implements IDiagramGenerator {
 
 		node.traceAndMark(e, context)
 		return node
+	}
+
+	def HierarchyNode toHierarchyNode(Hierarchy hierarchy, extension Context context) {
+		val hierarchyId = idCache.uniqueId(hierarchy, hierarchy.name)
+
+		val hasConstraint = !NodeModelUtils.findNodesForFeature(
+			hierarchy,
+			HIERARCHY__CONSTRAINT
+		).empty
+
+		val hierarchyText =
+			if (hasConstraint)
+				hierarchy.completeness.toString.toLowerCase + ' ' +
+					hierarchy.constraint.toString.toLowerCase
+			else
+				hierarchy.completeness.toString.toLowerCase
+
+		// Calculate the node width according to the hierarchy text.
+		// Extra horizontal padding prevents the label from touching the borders.
+		val double charWidth = 7.5
+		val double horizontalPadding = 18.0
+
+		val double hierarchyWidth = Math.max(
+			90.0,
+			hierarchyText.length * charWidth + 2.0 * horizontalPadding
+		)
+
+		val double hierarchyHeight = 32.0
+
+		val node = new HierarchyNode => [
+			id = hierarchyId
+			type = DiagramTypes.NODE_HIERARCHY
+			layout = 'hbox'
+
+			size = new Dimension(hierarchyWidth, hierarchyHeight)
+
+			layoutOptions = new LayoutOptions [
+				minWidth = hierarchyWidth
+				minHeight = hierarchyHeight
+				HAlign = 'center'
+				VAlign = 'center'
+				paddingFactor = 0.0
+			]
+
+			children = new ArrayList<SModelElement>
+		]
+
+		node.children.add(
+			(new SLabel [
+				id = idCache.uniqueId(hierarchyId + '.label')
+				type = DiagramTypes.LABEL_HIERARCHY
+				text = hierarchyText
+			]).trace(hierarchy, HIERARCHY__COMPLETENESS, -1)
+		)
+
+		return node.traceAndMark(hierarchy, context)
 	}
 
 	def SCompartment createAttributeLabels(Attribute a, String entityId, extension Context context) {
@@ -505,14 +536,41 @@ class ERDiagramGenerator implements IDiagramGenerator {
 		]).traceAndMark(a, context)
 	}
 
-	def SEdge inheritanceEdges(Entity entity, extension Context context) {
-		return new SEdge [
-			sourceId = idCache.getId(entity)
-			targetId = idCache.getId(entity.extends)
-			id = idCache.uniqueId(entity + sourceId + ':extends:' + targetId)
+	def List<SModelElement> hierarchyEdges(Hierarchy hierarchy, extension Context context) {
+		val edges = new ArrayList<SModelElement>
+
+		val hierarchyId = idCache.getId(hierarchy)
+		val baseId = idCache.getId(hierarchy.base)
+
+		// Create one edge from the hierarchy node to its superclass
+		edges.add(new SEdge [
+			sourceId = hierarchyId
+			targetId = baseId
+			id = idCache.uniqueId(hierarchyId + ':extends:' + baseId)
 			type = DiagramTypes.EDGE_INHERITANCE
 			children = new ArrayList<SModelElement>
+		])
+
+		// Create one edge from each subclass to its hierarchy node
+		val subclasses = model.entities.filter[
+			it.extends === hierarchy
 		]
+
+		for (subclass : subclasses) {
+			val subclassId = idCache.getId(subclass)
+
+			edges.add(new SEdge [
+				sourceId = subclassId
+				targetId = hierarchyId
+				id = idCache.uniqueId(
+					subclassId + ':extends:' + hierarchyId
+				)
+				type = DiagramTypes.EDGE_INHERITANCE
+				children = new ArrayList<SModelElement>
+			])
+		}
+
+		return edges
 	}
 	
 	def <T extends SModelElement> T traceAndMark(T sElement, EObject element, Context context) {

@@ -5,7 +5,14 @@ import { RenderingContext, svg, RectangularNodeView, SEdge, PolylineEdgeView, SG
          IViewArgs, Hoverable, Selectable, PreRenderedView, SLabel, SLabelView, SCompartment } from "sprotty";
 import { injectable } from "inversify";
 import { toDegrees, Point } from "sprotty-protocol";
-import { EntityNode, ERModel, NotationEdge, PopupButton, RelationshipNode } from "./model";
+import {
+    EntityNode,
+    ERModel,
+    HierarchyNode,
+    NotationEdge,
+    PopupButton,
+    RelationshipNode
+} from "./model";
 import { DiagramTypes, RelationshipTypes, UITypes } from "./utils";
 
 
@@ -45,32 +52,17 @@ export class EntityNodeView extends RectangularNodeView {
         // Altura del encabezado de la entidad
         const headerHeight = node.isUml ? 58 : 38;
 
-        // Compartimentos del nodo:
-        // [0] cabecera
-        // [1] atributos
-        // [2] propiedades de hierarchy, si existen
-        const attributesCompartment = node.children[1] as Readonly<SCompartment> | undefined;
-        const hierarchyCompartment = node.children[2] as Readonly<SCompartment> | undefined;
+        // Compartimento de atributos
+        const attributesCompartment =
+            node.children[1] as Readonly<SCompartment> | undefined;
 
         const hasAttributes =
             !!attributesCompartment &&
             attributesCompartment.children.length > 0;
 
-        const hasHierarchy =
-            !!hierarchyCompartment &&
-            hierarchyCompartment.type === "comp:hierarchy";
-
-        // Separador entre cabecera y contenido
+        // Separador entre cabecera y atributos
         const headerSeparator =
             `M 0,${headerHeight} L ${node.bounds.width},${headerHeight}`;
-
-        // Separador entre atributos y propiedades de hierarchy
-        let hierarchySeparator = "";
-
-        if (hasHierarchy && hierarchyCompartment) {
-            hierarchySeparator =
-                `M 0,${hierarchyCompartment.bounds.y} L ${node.bounds.width},${hierarchyCompartment.bounds.y}`;
-        }
 
         return (
             <g>
@@ -100,21 +92,57 @@ export class EntityNodeView extends RectangularNodeView {
 
                 {context.renderChildren(node)}
 
-                {/* Separador entre cabecera y contenido */}
-                {(hasAttributes || hasHierarchy) && (
+                {hasAttributes && (
                     <path
                         class-comp-separator={true}
                         d={headerSeparator}
                     />
                 )}
+            </g>
+        );
+    }
+}
 
-                {/* Separador entre atributos y propiedades de hierarchy */}
-                {hasHierarchy && (
-                    <path
-                        class-comp-separator={true}
-                        d={hierarchySeparator}
-                    />
-                )}
+@injectable()
+export class HierarchyNodeView extends RectangularNodeView {
+    override render(
+        node: Readonly<HierarchyNode & Hoverable & Selectable>,
+        context: RenderingContext
+    ): VNode | undefined {
+        if (!this.isVisible(node, context)) {
+            return undefined;
+        }
+
+        const width = Math.max(node.bounds.width, 0);
+        const height = Math.max(node.bounds.height, 0);
+
+        const label = node.children?.[0] as Readonly<SLabel> | undefined;
+        const text = label?.text ?? "";
+
+        return (
+            <g>
+                <rect
+                    class-sprotty-node={true}
+                    class-hierarchy-node={true}
+                    class-mouseover={node.hoverFeedback}
+                    class-selected={node.selected}
+                    x="0"
+                    y="0"
+                    rx="5"
+                    ry="5"
+                    width={width}
+                    height={height}
+                />
+
+                <text
+                    class-hierarchy-label={true}
+                    x={width / 2}
+                    y={height / 2}
+                    text-anchor="middle"
+                    dominant-baseline="middle"
+                >
+                    {text}
+                </text>
             </g>
         );
     }

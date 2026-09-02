@@ -11,12 +11,15 @@ entity User {
     email: VARCHAR(255)
     password: VARCHAR(255)
 }
-entity Admin extends User {
-    admin_id: INT key
+
+hierarchy h_user User partial disjoint
+
+entity Admin extends h_user {
+    user_id: INT key
     title: VARCHAR(255)
 }
-entity Moderator extends User {
-    moderator_id: INT key
+entity Moderator extends h_user {
+    user_id: INT key
     title: VARCHAR(255)
 }
 entity Profile {

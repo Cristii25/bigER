@@ -12,6 +12,9 @@ export class EntityNode extends RectangularNode {
     isUml: boolean;
 }
 
+export class HierarchyNode extends RectangularNode {
+}
+
 export class RelationshipNode extends DiamondNode {
     expanded: boolean;
     weak: boolean;

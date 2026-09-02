@@ -30,6 +30,15 @@ class EntityNode extends SNode {
 }
 
 @Accessors
+class HierarchyNode extends SNode {
+
+	new() { }
+	new((HierarchyNode) => void initializer) {
+		initializer.apply(this)
+	}
+}
+
+@Accessors
 class RelationshipNode extends SNode {
 	boolean expanded
 	boolean weak

@@ -116,16 +116,16 @@ class MongoDbGenerator implements IErGenerator {
 			}
 			attributes += attr
 		}
-		if (entity.extends !== null) {
-			attributes.addAll(getAllAttrWithExtendsWithNamePrefix(entity.extends))
+		if (entity.extends !== null && entity.extends.base !== null) {
+			attributes.addAll(getAllAttrWithExtendsWithNamePrefix(entity.extends.base))
 		}
 		return attributes
 	}
 	private def Iterable<Attribute> getAllAttrWithExtends(Entity entity) {
 		val attributes = newHashSet
 		attributes += entity.attributes
-		if (entity.extends !== null) {
-			attributes.addAll(getAllAttrWithExtendsWithNamePrefix(entity.extends))
+		if (entity.extends !== null && entity.extends.base !== null) {
+			attributes.addAll(getAllAttrWithExtendsWithNamePrefix(entity.extends.base))
 		}
 		return attributes
 	}

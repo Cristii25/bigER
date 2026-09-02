@@ -9,12 +9,15 @@ entity Person {
     person_id: INT key
     name: VARCHAR(255)
 }
-entity Customer extends Person {
-    customer_id: INT key
+
+hierarchy h_person Person partial overlapping
+
+entity Customer extends h_person {
+    person_id: INT key
     email: VARCHAR(255)
 }
-entity Employee extends Person {
-    employee_id: INT key
+entity Employee extends h_person {
+    person_id: INT key
     salary: DECIMAL
 }
 entity Product {
