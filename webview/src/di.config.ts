@@ -9,6 +9,7 @@ import { configureModelElement, HtmlRoot, HtmlRootView, overrideViewerOptions, P
     labelEditUiModule, SModelRoot, SLabel, ExpandButtonHandler, SButton, expandFeature, SLabelView, ExpandButtonView,
     SRoutingHandle, SRoutingHandleView, editFeature, configureActionHandler } from 'sprotty';
 import {
+    AssociativeRelationshipEdgeView,
     InheritanceEdgeView,
     ERModelView,
     EntityNodeView,
@@ -18,6 +19,7 @@ import {
     UniqueLabelView
 } from './views';
 import {
+    AssociativeRelationshipEdge,
     EntityNode,
     ERModel,
     HierarchyNode,
@@ -91,6 +93,7 @@ configureModelElement(
     // Edges
     configureModelElement(context, 'edge', NotationEdge, NotationEdgeView, { disable: [editFeature] });
     configureModelElement(context, 'edge:inheritance', InheritanceEdge, InheritanceEdgeView, { disable: [editFeature] });
+    configureModelElement(context, 'edge:associative-relationship', AssociativeRelationshipEdge, AssociativeRelationshipEdgeView, { disable: [editFeature] });
     configureModelElement(context, 'edge:partial', NotationEdge, NotationEdgeView, { disable: [editFeature] });
     // Labels
     configureModelElement(context, 'label:header', SLabel, SLabelView, { enable: [editLabelFeature] });

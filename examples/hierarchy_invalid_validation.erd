@@ -229,6 +229,10 @@ erdiagram HierarchyInvalidValidation
 // An associative entity cannot be used as the base
 // of a hierarchy.
 //
+// The associative entity participates in two associative
+// relationships so that the only relevant validation error
+// is the hierarchy base.
+//
 // Expected error:
 // "Associative entity 'AssociativeEntity' cannot be the base of a hierarchy"
 //
@@ -236,7 +240,23 @@ erdiagram HierarchyInvalidValidation
 // invalidHierarchyBase
 // ------------------------------------------------------------
 //
+// entity EntityA {
+//     id key
+// }
+//
+// entity EntityB {
+//     id key
+// }
+//
 // associative entity AssociativeEntity {
+// }
+//
+// associative relationship entity_a_association {
+//     EntityA[1..1] -> AssociativeEntity[1..N]
+// }
+//
+// associative relationship entity_b_association {
+//     EntityB[1..1] -> AssociativeEntity[1..N]
 // }
 //
 // hierarchy h_associative AssociativeEntity partial

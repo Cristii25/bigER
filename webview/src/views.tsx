@@ -6,6 +6,7 @@ import { RenderingContext, svg, RectangularNodeView, SEdge, PolylineEdgeView, SG
 import { injectable } from "inversify";
 import { toDegrees, Point } from "sprotty-protocol";
 import {
+    AssociativeRelationshipEdge,
     EntityNode,
     ERModel,
     HierarchyNode,
@@ -424,6 +425,53 @@ export class PopupButtonView extends PreRenderedView {
     override render(model: Readonly<PopupButton>, context: RenderingContext): VNode | undefined {
         const node = super.render(model, context);
         return node;
+    }
+}
+
+/**
+ * Renderiza las aristas correspondientes a las relaciones asociativas.
+ *
+ * Una relación asociativa se representa mediante una línea directa
+ * y continua entre las entidades participantes, sin nodo intermedio
+ * ni nombre de relación.
+ *
+ * Las cardinalidades se renderizan como etiquetas sobre la propia arista.
+ */
+@injectable()
+export class AssociativeRelationshipEdgeView extends PolylineEdgeView {
+    override render(
+        edge: Readonly<AssociativeRelationshipEdge>,
+        context: RenderingContext,
+        args?: IViewArgs
+    ): VNode | undefined {
+        const route = this.edgeRouterRegistry.route(edge, { args });
+
+        if (route.length === 0) {
+            if (edge.children.length === 0) {
+                return undefined;
+            }
+
+            return <g>{context.renderChildren(edge, { route })}</g>;
+        }
+
+        if (!this.isVisible(edge, route, context)) {
+            if (edge.children.length === 0) {
+                return undefined;
+            }
+
+            return <g>{context.renderChildren(edge, { route })}</g>;
+        }
+
+        return (
+            <g
+                class-sprotty-edge={true}
+                class-associative-relationship-edge={true}
+                class-mouseover={edge.hoverFeedback}
+            >
+                {this.renderLine(edge, route, context, args)}
+                {context.renderChildren(edge, { route })}
+            </g>
+        );
     }
 }
 

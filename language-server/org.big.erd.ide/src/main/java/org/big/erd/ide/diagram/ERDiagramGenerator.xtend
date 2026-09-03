@@ -11,6 +11,7 @@ import org.big.erd.entityRelationship.Model
 import org.big.erd.ide.diagram.EntityNode
 import org.big.erd.ide.diagram.NotationEdge
 import org.big.erd.ide.diagram.RelationshipNode
+import org.big.erd.ide.diagram.AssociativeRelationshipEdge
 import org.eclipse.sprotty.Dimension
 import org.big.erd.ide.diagram.ERModel
 import org.eclipse.emf.ecore.EObject
@@ -33,7 +34,6 @@ import org.big.erd.entityRelationship.RelationshipType
 import org.big.erd.entityRelationship.Hierarchy
 import org.big.erd.ide.diagram.HierarchyNode
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils
-
 import static org.big.erd.entityRelationship.EntityRelationshipPackage.Literals.*
 
 
@@ -78,12 +78,20 @@ class ERDiagramGenerator implements IDiagramGenerator {
 	
 		// Create relationship nodes and edges
 		m.relationships.forEach[
-			if (!notationType.equals(NotationType.UML)) {
-				graph.children.add(relationshipNodes(it, context))
-			} else if (notationType.equals(NotationType.UML) && it.third !== null) {
-				graph.children.add(relationshipNodes(it, context))
+			if (it.associative) {
+				// Associative relationships are represented as direct edges
+				// between the participating entities, without a relationship node.
+				graph.children.addAll(addAssociativeRelationEdges(it, context))
+			} else {
+				// Standard relationships keep their existing representation.
+				if (!notationType.equals(NotationType.UML)) {
+					graph.children.add(relationshipNodes(it, context))
+				} else if (notationType.equals(NotationType.UML) && it.third !== null) {
+					graph.children.add(relationshipNodes(it, context))
+				}
+
+				graph.children.addAll(addRelationEdges(it, context))
 			}
-			graph.children.addAll(addRelationEdges(it, context))
 		]
 		graph.traceAndMark(m, context)
 		return graph;
@@ -259,6 +267,65 @@ class ERDiagramGenerator implements IDiagramGenerator {
 
 		return node.traceAndMark(relationship, context)
 	}
+
+	def List<SModelElement> addAssociativeRelationEdges(
+		Relationship relationship,
+		extension Context context
+	) {
+		val edges = new ArrayList<SModelElement>
+
+		if (relationship.first === null || relationship.second === null) {
+			return edges
+		}
+
+		val source = idCache.getId(relationship.first.target)
+		val target = idCache.getId(relationship.second.target)
+
+		val edgeId = idCache.uniqueId(
+			relationship,
+			source + ":associative:" + relationship.name + ":" + target
+		)
+
+		edges.add(
+			(new AssociativeRelationshipEdge [
+				id = edgeId
+				type = DiagramTypes.EDGE_ASSOCIATIVE_RELATIONSHIP
+				sourceId = source
+				targetId = target
+				children = createAssociativeRelationshipLabels(
+					relationship.first,
+					relationship.second,
+					edgeId,
+					context
+				)
+			]).traceAndMark(relationship, context)
+		)
+
+		return edges
+	}
+
+	def SLabel[] createAssociativeRelationshipLabels(
+		RelationEntity sourceRelation,
+		RelationEntity targetRelation,
+		String edgeId,
+		extension Context context
+	) {
+		val SLabel[] labels = newArrayOfSize(2)
+
+		labels.set(0, (new SLabel [
+			id = idCache.uniqueId(edgeId + '.sourceCardinality')
+			text = getAssociativeCardinality(sourceRelation)
+			type = DiagramTypes.LABEL_TOP_LEFT
+		]).trace(sourceRelation, RELATION_ENTITY__CARDINALITY, -1))
+
+		labels.set(1, (new SLabel [
+			id = idCache.uniqueId(edgeId + '.targetCardinality')
+			text = getAssociativeCardinality(targetRelation)
+			type = DiagramTypes.LABEL_TOP_RIGHT
+		]).trace(targetRelation, RELATION_ENTITY__CARDINALITY, -1))
+
+		return labels
+	}
 	
 	def List<SModelElement> addRelationEdges(Relationship rel, extension Context context) {
 		val edges = new ArrayList<SModelElement>
@@ -323,47 +390,45 @@ class ERDiagramGenerator implements IDiagramGenerator {
 		]).traceAndMark(relation, context)
 	}
 	
-	def SLabel[] createLabels(RelationEntity relation, RelationEntity targetRelation, NotationType notation, String edgeId, extension Context context) {					  	
-		val typeCardinality = targetRelation === null ? DiagramTypes.LABEL_TOP : DiagramTypes.LABEL_TOP_LEFT;									  
-		val typeRole = targetRelation === null ? DiagramTypes.LABEL_BOTTOM : DiagramTypes.LABEL_BOTTOM_LEFT;
-		// determine number of labels
-		var size = targetRelation === null ? 2 : 5 
+	def SLabel[] createLabels(
+		RelationEntity relation,
+		RelationEntity targetRelation,
+		NotationType notation,
+		String edgeId,
+		extension Context context
+	) {
+		val typeRole = targetRelation === null ?
+			DiagramTypes.LABEL_BOTTOM :
+			DiagramTypes.LABEL_BOTTOM_LEFT
+
+		// Normal relationships do not display cardinality labels.
+		// Only role labels and, for direct UML relationships,
+		// the relationship name and the second role are preserved.
+		var size = targetRelation === null ? 1 : 3
 		val SLabel[] labels = newArrayOfSize(size)
-							  
+
 		labels.set(0, (new SLabel [
-			id = idCache.uniqueId(edgeId + '.label')
-			text = getEdgeLabelText(notation, getCardinality(relation))
-			type = typeCardinality
-		]).trace(relation, RELATION_ENTITY__CARDINALITY, -1))
-				
-		labels.set(1, (new SLabel [
 			id = idCache.uniqueId(edgeId + '.roleLabel')
 			text = getRoleLabelText(relation)
 			type = typeRole
 		]).trace(relation, RELATION_ENTITY__ROLE, -1))
-			
+
 		if (targetRelation !== null) {
-			val relationship = relation.eContainer() as Relationship;
-			
-			labels.set(2, (new SLabel [
+			val relationship = relation.eContainer() as Relationship
+
+			labels.set(1, (new SLabel [
 				id = idCache.uniqueId(edgeId + '.relationName')
 				text = relationship.name
 				type = DiagramTypes.LABEL_TOP
-			]).trace(relation, RELATION_ENTITY__CARDINALITY, -1))
-			
-			labels.set(3, (new SLabel [
-				id = idCache.uniqueId(edgeId + '.additionalLabel')
-				text = getEdgeLabelText(notation, getCardinality(targetRelation))
-				type = DiagramTypes.LABEL_TOP_RIGHT
-			]).trace(relation, RELATION_ENTITY__CARDINALITY, -1))
-				
-			labels.set(4, (new SLabel [
+			]).trace(relationship, RELATIONSHIP__NAME, -1))
+
+			labels.set(2, (new SLabel [
 				id = idCache.uniqueId(edgeId + '.additionalRoleLabel')
 				text = getRoleLabelText(targetRelation)
 				type = DiagramTypes.LABEL_BOTTOM_RIGHT
-			]).trace(relation, RELATION_ENTITY__ROLE, -1))
+			]).trace(targetRelation, RELATION_ENTITY__ROLE, -1))
 		}
-		
+
 		return labels
 	}
 
@@ -599,6 +664,20 @@ class ERDiagramGenerator implements IDiagramGenerator {
 			return relationEntity.cardinality.toString
 		}
 		return ' '
+	}
+
+	def String getAssociativeCardinality(RelationEntity relationEntity) {
+		if (relationEntity.cardinality === null) {
+			return ' '
+		}
+
+		return switch relationEntity.cardinality {
+			case CardinalityType.ONE: '1..1'
+			case CardinalityType.MANY: '1..N'
+			case CardinalityType.ZERO_OR_ONE: '0..1'
+			case CardinalityType.ZERO_OR_MORE: '0..N'
+			default: ' '
+		}
 	}
 	
 	def getEdgeType(RelationEntity relation, NotationType notation) {

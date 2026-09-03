@@ -74,6 +74,7 @@
     </genClasses>
     <genClasses ecoreClass="EntityRelationship.ecore#//Relationship">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute EntityRelationship.ecore#//Relationship/weak"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute EntityRelationship.ecore#//Relationship/associative"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute EntityRelationship.ecore#//Relationship/name"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference EntityRelationship.ecore#//Relationship/first"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute EntityRelationship.ecore#//Relationship/firstType"/>

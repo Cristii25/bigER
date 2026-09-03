@@ -29,11 +29,13 @@ import org.eclipse.xtext.nodemodel.util.NodeModelUtils
 ])
 class EntityRelationshipValidator extends AbstractEntityRelationshipValidator {
 
+	// General validation codes
 	public static final String UNSUPPORTED_NOTATION = "unsupportedNotation";
 	public static final String MISSING_PRIMARY_KEY = "missingPrimaryKey";
 	public static final String MISSING_PARTIAL_KEY = "missingPartialKey";
 	public static final String INVALID_CARDINALITY = "invalidCardinality";
-	
+
+	// Hierarchy validation codes
 	public static final String HIERARCHY_WITHOUT_SUBCLASSES = "hierarchyWithoutSubclasses";
 	public static final String INVALID_SINGLE_SUBCLASS_HIERARCHY = "invalidSingleSubclassHierarchy";
 	public static final String MISSING_HIERARCHY_CONSTRAINT = "missingHierarchyConstraint";
@@ -41,7 +43,14 @@ class EntityRelationshipValidator extends AbstractEntityRelationshipValidator {
 	public static final String INVALID_HIERARCHY_BASE = "invalidHierarchyBase";
 	public static final String INVALID_HIERARCHY_CYCLE = "invalidHierarchyCycle";
 	public static final String INVALID_SUBCLASS_KEY = "invalidSubclassKey";
+
+	// Associative entity validation codes
 	public static final String INVALID_ASSOCIATIVE_KEY = "invalidAssociativeKey";
+	public static final String INSUFFICIENT_ASSOCIATIVE_RELATIONSHIPS = "insufficientAssociativeRelationships";
+
+	// Associative relationship validation codes
+	public static final String INVALID_ASSOCIATIVE_RELATIONSHIP_ENDPOINT = "invalidAssociativeRelationshipEndpoint";
+	public static final String INVALID_ASSOCIATIVE_RELATIONSHIP_ATTRIBUTES = "invalidAssociativeRelationshipAttributes";
 	
 	@Check
 	def checkKeys(Entity entity) {
@@ -84,6 +93,70 @@ class EntityRelationshipValidator extends AbstractEntityRelationshipValidator {
 					MISSING_PRIMARY_KEY
 				)
 			}
+		}
+	}
+
+	@Check
+	def checkAssociativeEntityRelationships(Entity entity) {
+		if (!entity.associative) {
+			return
+		}
+
+		val container = entity.eContainer
+
+		if (container instanceof Model) {
+			val model = container
+
+			val associativeRelationships = model.relationships.filter[
+				associative &&
+				(
+					first?.target === entity ||
+					second?.target === entity ||
+					third?.target === entity
+				)
+			].toList
+
+			if (associativeRelationships.size < 2) {
+				error(
+					'''Associative entity '«entity.name»' must participate in at least two associative relationships''',
+					entity,
+					ENTITY__NAME,
+					INSUFFICIENT_ASSOCIATIVE_RELATIONSHIPS
+				)
+			}
+		}
+	}
+
+	@Check
+	def checkAssociativeRelationship(Relationship relationship) {
+		if (!relationship.associative) {
+			return
+		}
+
+		// Una relación asociativa debe conectar al menos
+		// con una entidad asociativa.
+		val hasAssociativeEntity =
+			relationship.first?.target?.associative === true ||
+			relationship.second?.target?.associative === true ||
+			relationship.third?.target?.associative === true
+
+		if (!hasAssociativeEntity) {
+			error(
+				'''An associative relationship must involve an associative entity''',
+				relationship,
+				RELATIONSHIP__NAME,
+				INVALID_ASSOCIATIVE_RELATIONSHIP_ENDPOINT
+			)
+		}
+
+		// Una relación asociativa no puede tener atributos propios.
+		if (!relationship.attributes.empty) {
+			error(
+				'''Associative relationships cannot declare attributes''',
+				relationship,
+				RELATIONSHIP__ATTRIBUTES,
+				INVALID_ASSOCIATIVE_RELATIONSHIP_ATTRIBUTES
+			)
 		}
 	}
 

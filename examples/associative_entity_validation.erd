@@ -26,6 +26,24 @@ associative entity Enrollment {
 associative entity EmptyEnrollment {
 }
 
+// Each associative entity must participate in at least
+// two associative relationships.
+associative relationship student_enrollment {
+    Student[1..1] -> Enrollment[1..N]
+}
+
+associative relationship course_enrollment {
+    Course[1..1] -> Enrollment[1..N]
+}
+
+associative relationship student_empty_enrollment {
+    Student[1..1] -> EmptyEnrollment[1..N]
+}
+
+associative relationship course_empty_enrollment {
+    Course[1..1] -> EmptyEnrollment[1..N]
+}
+
 // Weak entity to verify that the existing syntax
 // continues to work correctly.
 weak entity WeakEntity {
@@ -74,9 +92,47 @@ weak entity WeakEntity {
 
 
 // ------------------------------------------------------------
+// INSUFFICIENT_ASSOCIATIVE_RELATIONSHIPS
+// An associative entity must participate in at least
+// two associative relationships.
+//
+// Expected error:
+// "Associative entity 'EnrollmentWithoutRelationships' must participate in at least two associative relationships"
+//
+// Error code:
+// insufficientAssociativeRelationships
+// ------------------------------------------------------------
+//
+// associative entity EnrollmentWithoutRelationships {
+// }
+
+
+// ------------------------------------------------------------
+// INSUFFICIENT_ASSOCIATIVE_RELATIONSHIPS
+// One associative relationship is not enough.
+//
+// Expected error:
+// "Associative entity 'EnrollmentWithOneRelationship' must participate in at least two associative relationships"
+//
+// Error code:
+// insufficientAssociativeRelationships
+// ------------------------------------------------------------
+//
+// associative entity EnrollmentWithOneRelationship {
+// }
+//
+// associative relationship only_one_relationship {
+//     Student[1..1] -> EnrollmentWithOneRelationship[1..N]
+// }
+
+
+// ------------------------------------------------------------
 // INVALID_HIERARCHY_BASE
 // An associative entity cannot be used as the base
 // of a hierarchy.
+//
+// The two associative relationships below are included so that
+// the only relevant validation error is the hierarchy base.
 //
 // Expected error:
 // "Associative entity 'AssociativeBase' cannot be the base of a hierarchy"
@@ -87,6 +143,14 @@ weak entity WeakEntity {
 //
 // associative entity AssociativeBase {
 //     description: STRING
+// }
+//
+// associative relationship student_associative_base {
+//     Student[1..1] -> AssociativeBase[1..N]
+// }
+//
+// associative relationship course_associative_base {
+//     Course[1..1] -> AssociativeBase[1..N]
 // }
 //
 // hierarchy h_associative AssociativeBase partial

@@ -21,7 +21,7 @@ Entity:
 	'}';
 
 Relationship:
-	(weak?='weak')? 'relationship' name=ID '{'
+	(weak?='weak' | associative?='associative')? 'relationship' name=ID '{'
 		(first=RelationEntity ((firstType=RelationshipType second=RelationEntity) (secondType=RelationshipType third=RelationEntity)?)?)?
 		(attributes += Attribute)*
 	'}';

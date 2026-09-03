@@ -30,6 +30,9 @@ export class NotationEdge extends LibavoidEdge {
     relationshipType: number;
 }
 
+export class AssociativeRelationshipEdge extends LibavoidEdge {
+}
+
 export class CardinalityLabel extends SLabel {
     override edgePlacement = <EdgePlacement> {
         position: 0.5,

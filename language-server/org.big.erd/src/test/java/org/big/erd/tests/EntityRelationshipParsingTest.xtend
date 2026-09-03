@@ -106,7 +106,19 @@ class EntityRelationshipParsingTest {
 				id key
 			}
 
+			entity Course {
+				id key
+			}
+
 			associative entity Enrollment {
+			}
+
+			associative relationship student_enrollment {
+				Student[1..1] -> Enrollment[1..N]
+			}
+
+			associative relationship course_enrollment {
+				Course[1..1] -> Enrollment[1..N]
 			}
 		''')
 
@@ -134,6 +146,86 @@ class EntityRelationshipParsingTest {
 		Assertions.assertFalse(
 			model.eResource.errors.empty,
 			'''Expected a syntax error when combining weak and associative modifiers'''
+		)
+	}
+
+	@Test
+	def void testAssociativeRelationship() {
+		val model = parseHelper.parse('''
+			erdiagram TestModel
+
+			entity Student {
+				id key
+			}
+
+			entity Course {
+				id key
+			}
+
+			associative entity Enrollment {
+			}
+
+			associative relationship student_enrollment {
+				Student[1..1] -> Enrollment[1..N]
+			}
+
+			associative relationship course_enrollment {
+				Course[1..1] -> Enrollment[1..N]
+			}
+		''')
+
+		checkModel(model)
+
+		val studentEnrollment = model.relationships.filter[
+			it.name.equals("student_enrollment")
+		].get(0)
+
+		Assertions.assertTrue(studentEnrollment.associative)
+		Assertions.assertFalse(studentEnrollment.weak)
+
+		Assertions.assertEquals(
+			"Student",
+			studentEnrollment.first.target.name
+		)
+
+		Assertions.assertEquals(
+			"Enrollment",
+			studentEnrollment.second.target.name
+		)
+
+		Assertions.assertEquals(
+			CardinalityType.ONE,
+			studentEnrollment.first.cardinality
+		)
+
+		Assertions.assertEquals(
+			CardinalityType.MANY,
+			studentEnrollment.second.cardinality
+		)
+	}
+
+	@Test
+	def void testRelationshipCannotBeWeakAndAssociative() {
+		val model = parseHelper.parse('''
+			erdiagram TestModel
+
+			entity Entity1 {
+				id key
+			}
+
+			entity Entity2 {
+				id key
+			}
+
+			weak associative relationship InvalidRelationship {
+				Entity1 -> Entity2
+			}
+		''')
+
+		Assertions.assertNotNull(model)
+		Assertions.assertFalse(
+			model.eResource.errors.empty,
+			'''Expected a syntax error when combining weak and associative relationship modifiers'''
 		)
 	}
 	

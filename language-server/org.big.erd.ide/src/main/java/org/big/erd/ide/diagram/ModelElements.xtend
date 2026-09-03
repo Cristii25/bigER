@@ -66,6 +66,15 @@ class NotationEdge extends SEdge {
 }
 
 @Accessors
+class AssociativeRelationshipEdge extends SEdge {
+
+	new() { }
+	new((AssociativeRelationshipEdge) => void initializer) {
+		initializer.apply(this)
+	}
+}
+
+@Accessors
 class PopupButton extends PreRenderedElement {
 	String target
 	String kind

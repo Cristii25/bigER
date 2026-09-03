@@ -322,7 +322,23 @@ class ErValidatorTest {
 		val model = parseHelper.parse('''
 			erdiagram Model
 
+			entity Student {
+				id key
+			}
+
+			entity Course {
+				id key
+			}
+
 			associative entity Enrollment {
+			}
+
+			associative relationship student_enrollment {
+				Student[1..1] -> Enrollment[1..N]
+			}
+
+			associative relationship course_enrollment {
+				Course[1..1] -> Enrollment[1..N]
 			}
 		''')
 
@@ -330,12 +346,126 @@ class ErValidatorTest {
 	}
 
 	@Test
-	def void testAssociativeEntityCannotBeHierarchyBase() {
+	def void testAssociativeEntityRequiresAtLeastTwoRelationships() {
 		val model = parseHelper.parse('''
 			erdiagram Model
 
 			associative entity Enrollment {
+			}
+		''')
+
+		validationTestHelper.assertError(
+			model.eResource(),
+			ENTITY,
+			EntityRelationshipValidator.INSUFFICIENT_ASSOCIATIVE_RELATIONSHIPS
+		)
+	}
+
+	@Test
+	def void testAssociativeEntityWithOneRelationshipIsInvalid() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			entity Student {
+				id key
+			}
+
+			associative entity Enrollment {
+			}
+
+			associative relationship student_enrollment {
+				Student[1..1] -> Enrollment[1..N]
+			}
+		''')
+
+		validationTestHelper.assertError(
+			model.eResource(),
+			ENTITY,
+			EntityRelationshipValidator.INSUFFICIENT_ASSOCIATIVE_RELATIONSHIPS
+		)
+	}
+
+	@Test
+	def void testAssociativeRelationshipMustInvolveAssociativeEntity() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			entity Student {
+				id key
+			}
+
+			entity Course {
+				id key
+			}
+
+			associative relationship invalid_relationship {
+				Student[1..1] -> Course[1..N]
+			}
+		''')
+
+		validationTestHelper.assertError(
+			model.eResource(),
+			RELATIONSHIP,
+			EntityRelationshipValidator.INVALID_ASSOCIATIVE_RELATIONSHIP_ENDPOINT
+		)
+	}
+
+	@Test
+	def void testAssociativeRelationshipCannotDeclareAttributes() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			entity Student {
+				id key
+			}
+
+			entity Course {
+				id key
+			}
+
+			associative entity Enrollment {
+			}
+
+			associative relationship student_enrollment {
+				Student[1..1] -> Enrollment[1..N]
 				date
+			}
+
+			associative relationship course_enrollment {
+				Course[1..1] -> Enrollment[1..N]
+			}
+		''')
+
+		validationTestHelper.assertError(
+			model.eResource(),
+			RELATIONSHIP,
+			EntityRelationshipValidator.INVALID_ASSOCIATIVE_RELATIONSHIP_ATTRIBUTES
+		)
+	}
+
+	@Test
+	def void testAssociativeEntityCannotBeHierarchyBase() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			entity Student {
+				id key
+			}
+
+			entity Course {
+				id key
+			}
+
+			associative entity Enrollment {
+				date
+			}
+
+			associative relationship student_enrollment {
+				Student[1..1] -> Enrollment[1..N]
+			}
+
+			associative relationship course_enrollment {
+				Course[1..1] -> Enrollment[1..N]
 			}
 
 			hierarchy h_enrollment Enrollment partial
