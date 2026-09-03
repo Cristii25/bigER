@@ -5,6 +5,7 @@ package org.big.erd.formatting2
 
 import org.big.erd.entityRelationship.Entity
 import org.big.erd.entityRelationship.Model
+import org.big.erd.entityRelationship.Hierarchy
 import org.eclipse.xtext.formatting2.AbstractFormatter2
 import org.eclipse.xtext.formatting2.IFormattableDocument
 import org.big.erd.entityRelationship.Relationship
@@ -19,17 +20,20 @@ class EntityRelationshipFormatter extends AbstractFormatter2 {
 		// model header
 		model.regionFor.keyword("erdiagram").append[oneSpace]
 		model.regionFor.feature(MODEL__NAME).append[setNewLines(1, 1, 2)]
-		
+	
 		// model options
 		model.notation.append[setNewLines(1, 1, 2)]
 		model.notation.regionFor.keyword("=").surround[noSpace]
-		
-		// entities and relationships
+	
+		// entities, relationships and hierarchies
 		for (entity : model.entities) {
 			entity.format
 		}
 		for (relationship : model.relationships) {
 			relationship.format
+		}
+		for (hierarchy : model.hierarchies) {
+			hierarchy.format
 		}
 	}
 
@@ -58,6 +62,19 @@ class EntityRelationshipFormatter extends AbstractFormatter2 {
 		}
 		
 		close.append[setNewLines(1, 1, 2)]	
+	}
+
+	def dispatch void format(Hierarchy hierarchy, extension IFormattableDocument document) {
+		hierarchy.regionFor.keyword("hierarchy").append[oneSpace]
+		hierarchy.regionFor.feature(HIERARCHY__NAME).surround[oneSpace]
+		hierarchy.regionFor.feature(HIERARCHY__BASE).surround[oneSpace]
+		hierarchy.regionFor.feature(HIERARCHY__COMPLETENESS).surround[oneSpace]
+
+		if (hierarchy.constraint !== null) {
+			hierarchy.regionFor.feature(HIERARCHY__CONSTRAINT).prepend[oneSpace]
+		}
+
+		hierarchy.append[setNewLines(1, 1, 2)]
 	}
 	
 	def dispatch void format(Relationship relationship, extension IFormattableDocument document) {

@@ -13,6 +13,10 @@ body {
 
     --biger-node-hover-color: #ff8a3d;
     --biger-node-selected-color: #00c2ff;
+
+    --biger-hierarchy-node-background: transparent;
+    --biger-hierarchy-node-border: var(--vscode-list-deemphasizedForeground);
+    --biger-hierarchy-node-text: var(--vscode-foreground);
 }
 
 /* Colores de las aristas en los temas claros de VS Code */
@@ -99,6 +103,26 @@ text {
     stroke-width: 1;
     fill: rgb(219, 218, 235);
     stroke: var(--vscode-list-deemphasizedForeground);
+}
+
+/*
+ * Nodo visual de una jerarquía.
+ *
+ * Utiliza una apariencia coherente con las entidades y relaciones.
+ */
+.sprotty-node.hierarchy-node {
+    fill: var(--biger-hierarchy-node-background);
+    stroke: var(--biger-hierarchy-node-border);
+    stroke-width: 1;
+}
+
+.hierarchy-label {
+    fill: var(--biger-hierarchy-node-text);
+    font-size: 13px;
+    font-weight: bold;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    pointer-events: none;
 }
 
 .sprotty-node.selected {

@@ -60,8 +60,8 @@ export namespace AddAttributeAction {
 }
 
 /**
- * Acción utilizada para editar una propiedad de la jerarquía
- * asociada a una entidad base.
+ * Acción utilizada para editar las propiedades
+ * de una jerarquía desde su nodo en el diagrama.
  */
 export interface EditHierarchyAction {
     kind: typeof EditHierarchyAction.KIND

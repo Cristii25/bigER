@@ -9,6 +9,7 @@ public final class DiagramTypes {
 	
 	// nodes
 	public static final String NODE_ENTITY = "node:entity";
+	public static final String NODE_HIERARCHY = "node:hierarchy";
 	public static final String NODE_RELATIONSHIP = "node:relationship";
 	
 	// edges
