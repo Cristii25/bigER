@@ -15,6 +15,9 @@ export class EntityNode extends RectangularNode {
     isUml: boolean;
 }
 
+export class HierarchyNode extends RectangularNode {
+}
+
 export class RelationshipNode extends DiamondNode {
     expanded: boolean;
     weak: boolean;
@@ -25,6 +28,9 @@ export class NotationEdge extends LibavoidEdge {
     notation: string;
     connectivity: string;
     relationshipType: number;
+}
+
+export class AssociativeRelationshipEdge extends LibavoidEdge {
 }
 
 export class CardinalityLabel extends SLabel {

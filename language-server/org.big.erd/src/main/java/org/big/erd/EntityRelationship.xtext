@@ -16,12 +16,12 @@ NotationOption:
 	'notation' '=' notationType=NotationType;
 
 Entity:
-	(weak?='weak' | associative?='associative')? 'entity' name=ID ('extends' extends=[Entity])? '{'
+	(weak?='weak' | associative?='associative')? 'entity' name=ID ('extends' extends=[Hierarchy])? '{'
 		(attributes += Attribute)*
 	'}';
 
 Relationship:
-	(weak?='weak')? 'relationship' name=ID '{'
+	(weak?='weak' | associative?='associative')? 'relationship' name=ID '{'
 		(first=RelationEntity ((firstType=RelationshipType second=RelationEntity) (secondType=RelationshipType third=RelationEntity)?)?)?
 		(attributes += Attribute)*
 	'}';
@@ -39,9 +39,10 @@ DataType:
 
 Hierarchy:
     'hierarchy'
+    name=ID
     base=[Entity]
     completeness=HierarchyCompleteness
-    constraint=HierarchyConstraint;
+    constraint=HierarchyConstraint?;
 
 @Override	
 terminal INT returns ecore::EInt:

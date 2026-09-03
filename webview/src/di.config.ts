@@ -8,9 +8,31 @@ import { configureModelElement, HtmlRoot, HtmlRootView, overrideViewerOptions, P
     TYPES, loadDefaultModules, ConsoleLogger, LogLevel, SCompartmentView, SCompartment, editLabelFeature,
     labelEditUiModule, SModelRoot, SLabel, ExpandButtonHandler, SButton, expandFeature, SLabelView, ExpandButtonView,
     SRoutingHandle, SRoutingHandleView, editFeature, configureActionHandler } from 'sprotty';
-import { InheritanceEdgeView, ERModelView, EntityNodeView, RelationshipNodeView, NotationEdgeView, UniqueLabelView } from './views';
-import { EntityNode, ERModel, NotationEdge, RelationshipNode, InheritanceEdge, CardinalityLabel, RoleLabel, LeftCardinalityLabel,
-    RightCardinalityLabel, LeftRoleLabel, RightRoleLabel } from './model';
+import {
+    AssociativeRelationshipEdgeView,
+    InheritanceEdgeView,
+    ERModelView,
+    EntityNodeView,
+    HierarchyNodeView,
+    RelationshipNodeView,
+    NotationEdgeView,
+    UniqueLabelView
+} from './views';
+import {
+    AssociativeRelationshipEdge,
+    EntityNode,
+    ERModel,
+    HierarchyNode,
+    NotationEdge,
+    RelationshipNode,
+    InheritanceEdge,
+    CardinalityLabel,
+    RoleLabel,
+    LeftCardinalityLabel,
+    RightCardinalityLabel,
+    LeftRoleLabel,
+    RightRoleLabel
+} from './model';
 import { BigerEdgeLayoutPostprocessor } from './layout-postprocessor';
 import toolbarModule from './toolbar/di.config';
 import { RefreshAction, RefreshActionHandler } from './refresh';
@@ -42,16 +64,36 @@ const DiagramModule = new ContainerModule((bind, unbind, isBound, rebind) => {
     const context = { bind, unbind, isBound, rebind };
     configureModelElement(context, 'graph', ERModel, ERModelView);
     // Nodes
-    configureModelElement(context, 'node:entity', EntityNode, EntityNodeView, { enable: [expandFeature] });
-    configureModelElement(context, 'node:relationship', RelationshipNode, RelationshipNodeView, { enable: [expandFeature] });
+configureModelElement(
+    context,
+    'node:entity',
+    EntityNode,
+    EntityNodeView,
+    { enable: [expandFeature] }
+);
+
+configureModelElement(
+    context,
+    'node:hierarchy',
+    HierarchyNode,
+    HierarchyNodeView
+);
+
+configureModelElement(
+    context,
+    'node:relationship',
+    RelationshipNode,
+    RelationshipNodeView,
+    { enable: [expandFeature] }
+);
     // Compartments
     configureModelElement(context, 'comp:entity-header', SCompartment, SCompartmentView);
     configureModelElement(context, 'comp:attributes', SCompartment, SCompartmentView);
     configureModelElement(context, 'comp:attribute-row', SCompartment, SCompartmentView);
-    configureModelElement(context, 'comp:hierarchy', SCompartment, SCompartmentView);
     // Edges
     configureModelElement(context, 'edge', NotationEdge, NotationEdgeView, { disable: [editFeature] });
     configureModelElement(context, 'edge:inheritance', InheritanceEdge, InheritanceEdgeView, { disable: [editFeature] });
+    configureModelElement(context, 'edge:associative-relationship', AssociativeRelationshipEdge, AssociativeRelationshipEdgeView, { disable: [editFeature] });
     configureModelElement(context, 'edge:partial', NotationEdge, NotationEdgeView, { disable: [editFeature] });
     // Labels
     configureModelElement(context, 'label:header', SLabel, SLabelView, { enable: [editLabelFeature] });

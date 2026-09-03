@@ -33,6 +33,15 @@ class EntityNode extends SNode {
 }
 
 @Accessors
+class HierarchyNode extends SNode {
+
+	new() { }
+	new((HierarchyNode) => void initializer) {
+		initializer.apply(this)
+	}
+}
+
+@Accessors
 class RelationshipNode extends SNode {
 	boolean expanded
 	boolean weak
@@ -52,6 +61,15 @@ class NotationEdge extends SEdge {
 
 	new() { }
 	new((NotationEdge) => void initializer) {
+		initializer.apply(this)
+	}
+}
+
+@Accessors
+class AssociativeRelationshipEdge extends SEdge {
+
+	new() { }
+	new((AssociativeRelationshipEdge) => void initializer) {
 		initializer.apply(this)
 	}
 }

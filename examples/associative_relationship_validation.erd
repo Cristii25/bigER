@@ -1,0 +1,164 @@
+erdiagram AssociativeRelationshipValidation
+
+// ============================================================
+// VALID CASE
+// ============================================================
+
+// Complete example using an associative entity and
+// associative relationships.
+//
+// Requisito_de_Puesto is identified conceptually by the
+// entities it associates with.
+//
+// Associative relationships are used to connect the
+// associative entity directly to those entities.
+//
+// A normal relationship can still connect an associative
+// entity to another entity.
+entity Puesto_de_Trabajo {
+    id_puesto key
+    nombre_puesto
+}
+
+entity Competencia {
+    id_competencia key
+    nombre_competencia
+}
+
+entity Validador {
+    id_validador key
+    rol_empresa
+}
+
+associative entity Requisito_de_Puesto {
+}
+
+associative relationship requiere {
+    Puesto_de_Trabajo[1..1] -> Requisito_de_Puesto[1..N]
+}
+
+associative relationship es_requerida_por {
+    Competencia[1..1] -> Requisito_de_Puesto[1..N]
+}
+
+relationship validada_por {
+    Requisito_de_Puesto[0..N] -> Validador[1..1]
+}
+
+
+// ============================================================
+// INVALID CASES
+// Uncomment each case separately to test the validation error.
+// ============================================================
+
+
+// ------------------------------------------------------------
+// INVALID_ASSOCIATIVE_RELATIONSHIP_ENDPOINT
+// An associative relationship must involve at least
+// one associative entity.
+//
+// An associative relationship between two standard entities
+// is therefore invalid.
+//
+// Expected error:
+// "An associative relationship must involve an associative entity"
+//
+// Error code:
+// invalidAssociativeRelationshipEndpoint
+// ------------------------------------------------------------
+//
+// entity StandardEntityA {
+//     id key
+// }
+//
+// entity StandardEntityB {
+//     id key
+// }
+//
+// associative relationship invalid_association {
+//     StandardEntityA[1..1] -> StandardEntityB[1..N]
+// }
+
+
+// ------------------------------------------------------------
+// INVALID_ASSOCIATIVE_RELATIONSHIP_ATTRIBUTES
+// An associative relationship cannot declare attributes.
+//
+// Attributes that belong to the association must be declared
+// inside the associative entity instead.
+//
+// Expected error:
+// "Associative relationships cannot declare attributes"
+//
+// Error code:
+// invalidAssociativeRelationshipAttributes
+// ------------------------------------------------------------
+//
+// entity EntityA {
+//     id key
+// }
+//
+// entity EntityB {
+//     id key
+// }
+//
+// associative entity AssociativeEntity {
+// }
+//
+// associative relationship entity_a_association {
+//     EntityA[1..1] -> AssociativeEntity[1..N]
+//     date
+// }
+//
+// associative relationship entity_b_association {
+//     EntityB[1..1] -> AssociativeEntity[1..N]
+// }
+
+
+// ------------------------------------------------------------
+// INVALID RELATIONSHIP MODIFIER COMBINATION
+// A relationship cannot be weak and associative
+// at the same time.
+//
+// This is rejected directly by the grammar, therefore it does
+// not produce a custom validator error code.
+// ------------------------------------------------------------
+//
+// entity EntityA {
+//     id key
+// }
+//
+// associative entity AssociativeEntity {
+// }
+//
+// weak associative relationship InvalidRelationship {
+//     EntityA[1..1] -> AssociativeEntity[1..N]
+// }
+
+
+// ------------------------------------------------------------
+// INSUFFICIENT_ASSOCIATIVE_RELATIONSHIPS
+// An associative entity cannot be identified through
+// only one associative relationship.
+//
+// This validation belongs to the associative entity, but this
+// case is also useful here because it demonstrates that one
+// associative relationship is not enough.
+//
+// Expected error:
+// "Associative entity 'SingleAssociationEntity' must participate in at least two associative relationships"
+//
+// Error code:
+// insufficientAssociativeRelationships
+// ------------------------------------------------------------
+//
+// entity EntityA {
+//     id key
+// }
+//
+// associative entity SingleAssociationEntity {
+// }
+//
+// associative relationship only_association {
+//     EntityA[1..1] -> SingleAssociationEntity[1..N]
+// }

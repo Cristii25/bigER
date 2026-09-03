@@ -9,12 +9,14 @@ public final class DiagramTypes {
 	
 	// nodes
 	public static final String NODE_ENTITY = "node:entity";
+	public static final String NODE_HIERARCHY = "node:hierarchy";
 	public static final String NODE_RELATIONSHIP = "node:relationship";
 	
 	// edges
 	public static final String EDGE = "edge";
 	public static final String EDGE_PARTIAL = "edge:partial";
 	public static final String EDGE_INHERITANCE = "edge:inheritance";
+	public static final String EDGE_ASSOCIATIVE_RELATIONSHIP = "edge:associative-relationship";
 	
 	// composites
 	public static final String COMP_ENTITY_HEADER = "comp:entity-header";

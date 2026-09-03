@@ -78,18 +78,6 @@ class PopupModelFactory implements IPopupModelFactory {
 	protected def createPopup(EObject semanticElement, SModelElement element, RequestPopupModelAction request) {
 		val popupId = element.id + '-popup'
 		val issueMarker = element.children?.filter(SIssueMarker)?.head
-		var hierarchy = null as Hierarchy
-
-		// Busca la jerarquía asociada cuando la entidad seleccionada es una entidad base.
-		if (semanticElement instanceof Entity) {
-			val model = semanticElement.eContainer
-			if (model instanceof Model) {
-				hierarchy = model.hierarchies.findFirst[
-					base === semanticElement
-				]
-			}
-		}
-
 		val popupChildren = new ArrayList<SModelElement>
 
 		popupChildren.add(
@@ -106,6 +94,8 @@ class PopupModelFactory implements IPopupModelFactory {
 				'''
 			]
 		)
+
+		if (semanticElement instanceof Entity || semanticElement instanceof Relationship) {
 
 		popupChildren.add(
 			new PopupButton [
@@ -151,12 +141,31 @@ class PopupModelFactory implements IPopupModelFactory {
 				'''
 			]
 		)
+	}
 
-		// Los controles de jerarquía solo se muestran para entidades base
-		// que tengan una declaración hierarchy asociada.
-		if (hierarchy !== null) {
+		// Los controles de jerarquía se muestran directamente sobre
+		// el nodo que representa la propia jerarquía.
+		if (semanticElement instanceof Hierarchy) {
 
-			// El texto del botón muestra siempre el valor alternativo disponible.
+			val hierarchy = semanticElement as Hierarchy
+
+			val model = hierarchy.eContainer
+			val subclassCount =
+			if (model instanceof Model)
+				model.entities.filter[it.extends === hierarchy].size
+			else
+				0
+
+		/*
+	 	* Con dos o más subclases pueden editarse tanto la completitud
+	 	* como la restricción de la jerarquía.
+	 	*
+	 	* Con una única subclase la jerarquía debe ser obligatoriamente
+	 	* "partial", por lo que no se ofrecen acciones que puedan llevarla
+	 	* a un estado inválido.
+	 	*/
+		if (subclassCount >= 2) {
+
 			val completenessLabel =
 				if (hierarchy.completeness.literal === 'total')
 					'Set Partial'
@@ -164,12 +173,12 @@ class PopupModelFactory implements IPopupModelFactory {
 					'Set Total'
 
 			val constraintLabel =
-				if (hierarchy.constraint.literal === 'disjoint')
+				if (hierarchy.constraint !== null &&
+					hierarchy.constraint.literal === 'disjoint')
 					'Set Overlapping'
 				else
 					'Set Disjoint'
 
-			// Botón para alternar entre jerarquía total y parcial.
 			popupChildren.add(
 				new PopupButton [
 					id = popupId + '-hierarchyCompletenessButton'
@@ -185,7 +194,6 @@ class PopupModelFactory implements IPopupModelFactory {
 				]
 			)
 
-			// Botón para alternar entre jerarquía disjunta y solapada.
 			popupChildren.add(
 				new PopupButton [
 					id = popupId + '-hierarchyConstraintButton'
@@ -201,6 +209,7 @@ class PopupModelFactory implements IPopupModelFactory {
 				]
 			)
 		}
+	}	
 
 		val htmlRoot = new HtmlRoot [
 			id = popupId
@@ -225,9 +234,17 @@ class PopupModelFactory implements IPopupModelFactory {
 						<span class="popup-element-name">«semanticElement.name»</span>
 					</div>
 				«ENDIF»
+
 				«IF semanticElement instanceof Relationship»
 					<div class="popup-element-info">
 						<vscode-tag class="popup-tag">Relationship</vscode-tag>
+						<span class="popup-element-name">«semanticElement.name»</span>
+					</div>
+				«ENDIF»
+
+				«IF semanticElement instanceof Hierarchy»
+					<div class="popup-element-info">
+						<vscode-tag class="popup-tag">Hierarchy</vscode-tag>
 						<span class="popup-element-name">«semanticElement.name»</span>
 					</div>
 				«ENDIF»

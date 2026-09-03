@@ -4,101 +4,250 @@ erdiagram HierarchyValidation
 // Ejemplos de jerarquías válidas
 // ==================================================
 
-// Caso 1: total + disjoint
-entity Person {
+
+// ==================================================
+// Caso 1:
+// Una misma entidad base puede tener varias
+// jerarquías independientes.
+// Ejemplo basado en el caso indicado por Álvaro.
+// ==================================================
+
+entity Employee {
+    id: INT key
+    name: VARCHAR(100)
+}
+
+// Jerarquía por puesto
+hierarchy h_job Employee partial disjoint
+
+entity Administrative extends h_job {
+    id: INT key
+    category: VARCHAR(100)
+}
+
+entity Technician extends h_job {
+    id: INT key
+    level: VARCHAR(100)
+}
+
+entity Engineer extends h_job {
+    id: INT key
+    engineer_type: VARCHAR(100)
+}
+
+
+// Jerarquía de gerencia.
+// Al tener una única subclase, solo puede ser partial.
+hierarchy h_management Employee partial
+
+entity Manager extends h_management {
     id: INT key
 }
 
-entity Employee extends Person {
-    employee_id: INT key
+
+// Jerarquía por jornada
+hierarchy h_schedule Employee total disjoint
+
+entity PartTimeEmployee extends h_schedule {
+    id: INT key
+    weekly_hours: INT
 }
 
-entity Customer extends Person {
-    customer_id: INT key
+entity FullTimeEmployee extends h_schedule {
+    id: INT key
+    salary: INT
 }
 
-hierarchy Person total disjoint
 
+// ==================================================
+// Caso 2:
+// Jerarquía total + overlapping
+// ==================================================
 
-// Caso 2: total + overlapping
 entity Vehicle {
     id: INT key
 }
 
-entity Car extends Vehicle {
-    car_id: INT key
-}
+hierarchy h_vehicle Vehicle total overlapping
 
-entity AmphibiousVehicle extends Vehicle {
-    amphibious_id: INT key
-}
-
-hierarchy Vehicle total overlapping
-
-
-// Caso 3: partial + disjoint
-entity Account {
+entity Car extends h_vehicle {
     id: INT key
 }
 
-entity PersonalAccount extends Account {
-    personal_id: INT key
+entity AmphibiousVehicle extends h_vehicle {
+    id: INT key
 }
 
-entity BusinessAccount extends Account {
-    business_id: INT key
-}
 
-hierarchy Account partial disjoint
+// ==================================================
+// Caso 3:
+// Jerarquía partial + overlapping
+// ==================================================
 
-
-// Caso 4: partial + overlapping
 entity Worker {
     id: INT key
 }
 
-entity Developer extends Worker {
-    developer_id: INT key
+hierarchy h_worker Worker partial overlapping
+
+entity Developer extends h_worker {
+    id: INT key
 }
 
-entity Manager extends Worker {
-    manager_id: INT key
+entity TeamLeader extends h_worker {
+    id: INT key
 }
 
-hierarchy Worker partial overlapping
+
+// ==================================================
+// Caso 4:
+// Jerarquías multinivel
+// Una entidad puede ser subclase de una jerarquía
+// y, a su vez, base de otra.
+// ==================================================
+
+entity Person {
+    id: INT key
+}
+
+hierarchy h_person Person partial
+
+entity Student extends h_person {
+    id: INT key
+}
+
+hierarchy h_student Student total disjoint
+
+entity UndergraduateStudent extends h_student {
+    id: INT key
+}
+
+entity PostgraduateStudent extends h_student {
+    id: INT key
+}
 
 
 // ==================================================
 // Ejemplos de jerarquías no válidas
+//
 // Descomentar cada caso por separado para probar
-// las validaciones
+// las validaciones.
 // ==================================================
 
+
+// ==================================================
 // Caso no válido 1:
-// No se puede declarar una hierarchy para una entity
-// que no tenga entidades hijas.
+// Una jerarquía debe tener al menos una subclase.
+// ==================================================
 //
 // entity Product {
 //     id: INT key
 // }
 //
-// hierarchy Product total disjoint
+// hierarchy h_product Product partial
 
 
+// ==================================================
 // Caso no válido 2:
-// No se puede definir más de una hierarchy
-// para la misma entity base.
+// Una jerarquía con una única subclase solo puede
+// declararse como partial.
+// ==================================================
 //
-// hierarchy Person partial overlapping
-
-
-// Caso no válido 3:
-// No se puede declarar una hierarchy sobre una entity
-// que extienda de otra, ya que solo se puede definir
-// sobre la entity raíz de la jerarquía.
+// entity SingleBase {
+//     id: INT key
+// }
 //
-// entity DeveloperEmployee extends Employee {
-//     developer_employee_id: INT key
+// hierarchy h_single SingleBase total
+//
+// entity SingleChild extends h_single {
+//     id: INT key
 // }
 
-// hierarchy Employee partial disjoint
+
+// ==================================================
+// Caso no válido 3:
+// Una jerarquía con una única subclase no puede
+// indicar disjoint ni overlapping.
+// ==================================================
+//
+// entity SingleConstraintBase {
+//     id: INT key
+// }
+//
+// hierarchy h_single_constraint SingleConstraintBase partial disjoint
+//
+// entity SingleConstraintChild extends h_single_constraint {
+//     id: INT key
+// }
+
+
+// ==================================================
+// Caso no válido 4:
+// Una jerarquía con dos o más subclases debe indicar
+// disjoint u overlapping.
+// ==================================================
+//
+// entity MultipleBase {
+//     id: INT key
+// }
+//
+// hierarchy h_multiple MultipleBase partial
+//
+// entity MultipleChild1 extends h_multiple {
+//     id: INT key
+// }
+//
+// entity MultipleChild2 extends h_multiple {
+//     id: INT key
+// }
+
+
+// ==================================================
+// Caso no válido 5:
+// La subclase debe declarar la misma clave que
+// su superclase.
+// ==================================================
+//
+// entity KeyBase {
+//     id: INT key
+// }
+//
+// hierarchy h_key KeyBase partial
+//
+// entity InvalidKeyChild extends h_key {
+//     another_id: INT key
+// }
+
+
+// ==================================================
+// Caso no válido 6:
+// Una entidad débil no puede ser la base de una
+// jerarquía.
+// ==================================================
+//
+// weak entity WeakBase {
+//     id: INT partial-key
+// }
+//
+// hierarchy h_weak WeakBase partial
+//
+// entity WeakChild extends h_weak {
+//     id: INT key
+// }
+
+
+// ==================================================
+// Caso no válido 7:
+// No se permiten ciclos de herencia.
+// ==================================================
+//
+// entity EntityA extends h_b {
+//     id: INT key
+// }
+//
+// entity EntityB extends h_a {
+//     id: INT key
+// }
+//
+// hierarchy h_a EntityA partial
+// hierarchy h_b EntityB partial
