@@ -281,6 +281,74 @@ class ErValidatorTest {
 			HIERARCHY,
 			EntityRelationshipValidator.INVALID_HIERARCHY_BASE
 		)
+	}
+
+	@Test
+	def void testAssociativeEntityCannotDeclareKey() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			associative entity Enrollment {
+				id key
+			}
+		''')
+
+		validationTestHelper.assertError(
+			model.eResource(),
+			ENTITY,
+			EntityRelationshipValidator.INVALID_ASSOCIATIVE_KEY
+		)
+	}
+
+	@Test
+	def void testAssociativeEntityCannotDeclarePartialKey() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			associative entity Enrollment {
+				id partial-key
+			}
+		''')
+
+		validationTestHelper.assertError(
+			model.eResource(),
+			ENTITY,
+			EntityRelationshipValidator.INVALID_ASSOCIATIVE_KEY
+		)
+	}
+
+	@Test
+	def void testAssociativeEntityWithoutAttributesIsValid() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			associative entity Enrollment {
+			}
+		''')
+
+		validationTestHelper.assertNoErrors(model)
+	}
+
+	@Test
+	def void testAssociativeEntityCannotBeHierarchyBase() {
+		val model = parseHelper.parse('''
+			erdiagram Model
+
+			associative entity Enrollment {
+				date
+			}
+
+			hierarchy h_enrollment Enrollment partial
+
+			entity EnrollmentChild extends h_enrollment {
+			}
+		''')
+
+		validationTestHelper.assertError(
+			model.eResource(),
+			HIERARCHY,
+			EntityRelationshipValidator.INVALID_HIERARCHY_BASE
+		)
 	}	
 
 	@Test

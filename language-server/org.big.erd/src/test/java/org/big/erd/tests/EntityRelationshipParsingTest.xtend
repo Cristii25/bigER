@@ -96,6 +96,46 @@ class EntityRelationshipParsingTest {
 		Assertions.assertEquals(1, model.entities.filter[!it.weak].size)
 		Assertions.assertEquals(true, model.relationships.get(0).isWeak)
 	}
+
+	@Test
+	def void testAssociativeEntity() {
+		val model = parseHelper.parse('''
+			erdiagram TestModel
+
+			entity Student {
+				id key
+			}
+
+			associative entity Enrollment {
+			}
+		''')
+
+		checkModel(model)
+
+		val enrollment = model.entities.filter[
+			it.name.equals("Enrollment")
+		].get(0)
+
+		Assertions.assertTrue(enrollment.associative)
+		Assertions.assertFalse(enrollment.weak)
+		Assertions.assertTrue(enrollment.attributes.empty)
+	}
+
+	@Test
+	def void testEntityCannotBeWeakAndAssociative() {
+		val model = parseHelper.parse('''
+			erdiagram TestModel
+
+			weak associative entity InvalidEntity {
+			}
+		''')
+
+		Assertions.assertNotNull(model)
+		Assertions.assertFalse(
+			model.eResource.errors.empty,
+			'''Expected a syntax error when combining weak and associative modifiers'''
+		)
+	}
 	
 	@Test
 	def void testInheritance() {

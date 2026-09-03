@@ -1,0 +1,355 @@
+erdiagram HierarchyInvalidValidation
+
+// ============================================================
+// INVALID HIERARCHY CASES
+// Uncomment each case separately to test the validation error.
+// ============================================================
+
+
+// ------------------------------------------------------------
+// HIERARCHY_WITHOUT_SUBCLASSES
+// Every hierarchy must have at least one subclass.
+//
+// Expected error:
+// "Hierarchy 'h_product' must have at least one subclass"
+//
+// Error code:
+// hierarchyWithoutSubclasses
+// ------------------------------------------------------------
+//
+// entity Product {
+//     id key
+// }
+//
+// hierarchy h_product Product partial
+
+
+// ------------------------------------------------------------
+// INVALID_SINGLE_SUBCLASS_HIERARCHY
+// A hierarchy with exactly one subclass must be declared
+// only as partial.
+//
+// Using total with a single subclass is invalid.
+//
+// Expected error:
+// "A hierarchy with a single subclass must be declared only as partial"
+//
+// Error code:
+// invalidSingleSubclassHierarchy
+// ------------------------------------------------------------
+//
+// entity Person {
+//     id key
+// }
+//
+// hierarchy h_employee Person total
+//
+// entity Employee extends h_employee {
+//     id key
+// }
+
+
+// ------------------------------------------------------------
+// INVALID_SINGLE_SUBCLASS_HIERARCHY
+// A hierarchy with exactly one subclass cannot declare
+// disjoint or overlapping.
+//
+// Expected error:
+// "A hierarchy with a single subclass must be declared only as partial"
+//
+// Error code:
+// invalidSingleSubclassHierarchy
+// ------------------------------------------------------------
+//
+// entity Person {
+//     id key
+// }
+//
+// hierarchy h_employee Person partial disjoint
+//
+// entity Employee extends h_employee {
+//     id key
+// }
+
+
+// ------------------------------------------------------------
+// INVALID_SINGLE_SUBCLASS_HIERARCHY
+// The same restriction applies to overlapping.
+//
+// Expected error:
+// "A hierarchy with a single subclass must be declared only as partial"
+//
+// Error code:
+// invalidSingleSubclassHierarchy
+// ------------------------------------------------------------
+//
+// entity Person {
+//     id key
+// }
+//
+// hierarchy h_employee Person partial overlapping
+//
+// entity Employee extends h_employee {
+//     id key
+// }
+
+
+// ------------------------------------------------------------
+// MISSING_HIERARCHY_CONSTRAINT
+// A hierarchy with two or more subclasses must explicitly
+// specify disjoint or overlapping.
+//
+// Expected error:
+// "A hierarchy with two or more subclasses must specify disjoint or overlapping"
+//
+// Error code:
+// missingHierarchyConstraint
+// ------------------------------------------------------------
+//
+// entity Person {
+//     id key
+// }
+//
+// hierarchy h_person Person partial
+//
+// entity Employee extends h_person {
+//     id key
+// }
+//
+// entity Customer extends h_person {
+//     id key
+// }
+
+
+// ------------------------------------------------------------
+// DUPLICATE_HIERARCHY_NAME
+// A hierarchy name must be globally unique.
+//
+// Two hierarchies cannot have the same name.
+//
+// Expected error:
+// "Name 'h_type' is already used by another model element"
+//
+// Error code:
+// duplicateHierarchyName
+// ------------------------------------------------------------
+//
+// entity Person {
+//     id key
+// }
+//
+// entity Employee {
+//     id key
+// }
+//
+// hierarchy h_type Person partial
+// hierarchy h_type Employee partial
+//
+// entity Customer extends h_type {
+//     id key
+// }
+
+
+// ------------------------------------------------------------
+// DUPLICATE_HIERARCHY_NAME
+// A hierarchy name cannot conflict with an entity name.
+//
+// Expected error:
+// "Name 'Person' is already used by another model element"
+//
+// Error code:
+// duplicateHierarchyName
+// ------------------------------------------------------------
+//
+// entity Person {
+//     id key
+// }
+//
+// hierarchy Person Person partial
+//
+// entity Employee extends Person {
+//     id key
+// }
+
+
+// ------------------------------------------------------------
+// DUPLICATE_HIERARCHY_NAME
+// A hierarchy name cannot conflict with a relationship name.
+//
+// Expected error:
+// "Name 'works_at' is already used by another model element"
+//
+// Error code:
+// duplicateHierarchyName
+// ------------------------------------------------------------
+//
+// entity Person {
+//     id key
+// }
+//
+// entity Company {
+//     id key
+// }
+//
+// relationship works_at {
+//     Person -> Company
+// }
+//
+// hierarchy works_at Person partial
+//
+// entity Employee extends works_at {
+//     id key
+// }
+
+
+// ------------------------------------------------------------
+// INVALID_HIERARCHY_BASE
+// A weak entity cannot be used as the base of a hierarchy.
+//
+// Expected error:
+// "Weak entity 'WeakEntity' cannot be the base of a hierarchy"
+//
+// Error code:
+// invalidHierarchyBase
+// ------------------------------------------------------------
+//
+// weak entity WeakEntity {
+//     code partial-key
+// }
+//
+// hierarchy h_weak WeakEntity partial
+//
+// entity Child extends h_weak {
+//     code key
+// }
+
+
+// ------------------------------------------------------------
+// INVALID_HIERARCHY_BASE
+// An associative entity cannot be used as the base
+// of a hierarchy.
+//
+// Expected error:
+// "Associative entity 'AssociativeEntity' cannot be the base of a hierarchy"
+//
+// Error code:
+// invalidHierarchyBase
+// ------------------------------------------------------------
+//
+// associative entity AssociativeEntity {
+// }
+//
+// hierarchy h_associative AssociativeEntity partial
+//
+// entity Child extends h_associative {
+// }
+
+
+// ------------------------------------------------------------
+// INVALID_SUBCLASS_KEY
+// A subclass must declare exactly the same key as
+// its superclass.
+//
+// Expected error:
+// "Subclass 'Employee' must declare the same key as superclass 'Person'"
+//
+// Error code:
+// invalidSubclassKey
+// ------------------------------------------------------------
+//
+// entity Person {
+//     id key
+// }
+//
+// hierarchy h_person Person partial
+//
+// entity Employee extends h_person {
+//     employee_id key
+// }
+
+
+// ------------------------------------------------------------
+// INVALID_SUBCLASS_KEY
+// A subclass is also invalid if it does not declare
+// the superclass key at all.
+//
+// Expected error:
+// "Subclass 'Employee' must declare the same key as superclass 'Person'"
+//
+// Error code:
+// invalidSubclassKey
+// ------------------------------------------------------------
+//
+// entity Person {
+//     id key
+// }
+//
+// hierarchy h_person Person partial
+//
+// entity Employee extends h_person {
+//     name
+// }
+
+
+// ------------------------------------------------------------
+// INVALID_HIERARCHY_CYCLE
+// Hierarchies cannot introduce inheritance cycles.
+//
+// Expected error:
+// "Hierarchy 'h_a' introduces an inheritance cycle"
+// or
+// "Hierarchy 'h_b' introduces an inheritance cycle"
+//
+// Error code:
+// invalidHierarchyCycle
+// ------------------------------------------------------------
+//
+// entity EntityA extends h_b {
+//     id key
+// }
+//
+// entity EntityB extends h_a {
+//     id key
+// }
+//
+// hierarchy h_a EntityA partial
+// hierarchy h_b EntityB partial
+
+
+// ------------------------------------------------------------
+// MULTIPLE INHERITANCE - SYNTAX ERROR
+// An entity can extend only one hierarchy.
+//
+// The grammar contains a single optional extends reference,
+// so multiple inheritance is rejected directly by the parser.
+//
+// This case does not produce a custom validator error code.
+// ------------------------------------------------------------
+//
+// entity Person {
+//     id key
+// }
+//
+// hierarchy h_one Person partial
+// hierarchy h_two Person partial
+//
+// entity Employee extends h_one extends h_two {
+//     id key
+// }
+
+
+// ------------------------------------------------------------
+// MISSING HIERARCHY PROPERTIES - SYNTAX ERROR
+// Hierarchy properties are mandatory.
+//
+// At minimum, a hierarchy must declare partial or total.
+//
+// This is rejected directly by the grammar, therefore it does
+// not produce a custom validator error code.
+// ------------------------------------------------------------
+//
+// entity Person {
+//     id key
+// }
+//
+// hierarchy h_person Person

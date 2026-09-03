@@ -41,16 +41,48 @@ class EntityRelationshipValidator extends AbstractEntityRelationshipValidator {
 	public static final String INVALID_HIERARCHY_BASE = "invalidHierarchyBase";
 	public static final String INVALID_HIERARCHY_CYCLE = "invalidHierarchyCycle";
 	public static final String INVALID_SUBCLASS_KEY = "invalidSubclassKey";
+	public static final String INVALID_ASSOCIATIVE_KEY = "invalidAssociativeKey";
 	
 	@Check
 	def checkKeys(Entity entity) {
+		if (entity.associative) {
+			val hasKey = entity.attributes.exists[
+				it.type === AttributeType.KEY
+			]
+
+			val hasPartialKey = entity.attributes.exists[
+				it.type === AttributeType.PARTIAL_KEY
+			]
+
+			if (hasKey || hasPartialKey) {
+				error(
+					'''Associative entities cannot declare key or partial-key attributes''',
+					entity,
+					ENTITY__ATTRIBUTES,
+					INVALID_ASSOCIATIVE_KEY
+				)
+			}
+
+			return
+		}
+
 		if (entity.weak) {
 			if (entity.attributes?.filter[it.type === AttributeType.PARTIAL_KEY].isNullOrEmpty) {
-				warning('''Missing partial key for weak entity''', entity, ENTITY__ATTRIBUTES, MISSING_PARTIAL_KEY)
+				warning(
+					'''Missing partial key for weak entity''',
+					entity,
+					ENTITY__ATTRIBUTES,
+					MISSING_PARTIAL_KEY
+				)
 			}
 		} else {
 			if (entity.attributes?.filter[it.type === AttributeType.KEY].isNullOrEmpty) {
-				warning('''Missing primary key for entity''', entity, ENTITY__ATTRIBUTES, MISSING_PRIMARY_KEY)
+				warning(
+					'''Missing primary key for entity''',
+					entity,
+					ENTITY__ATTRIBUTES,
+					MISSING_PRIMARY_KEY
+				)
 			}
 		}
 	}
@@ -134,6 +166,16 @@ class EntityRelationshipValidator extends AbstractEntityRelationshipValidator {
 			if (hierarchy.base !== null && hierarchy.base.weak) {
 				error(
 					'''Weak entity '«hierarchy.base.name»' cannot be the base of a hierarchy''',
+					hierarchy,
+					HIERARCHY__BASE,
+					INVALID_HIERARCHY_BASE
+				)
+			}
+
+			// Una entidad asociativa no puede actuar como raíz de una jerarquía
+			if (hierarchy.base !== null && hierarchy.base.associative) {
+				error(
+					'''Associative entity '«hierarchy.base.name»' cannot be the base of a hierarchy''',
 					hierarchy,
 					HIERARCHY__BASE,
 					INVALID_HIERARCHY_BASE
