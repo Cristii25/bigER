@@ -6,64 +6,72 @@ notation=default
 
 // Ejemplo 1: herencia simple
 // Employee es una especialización de Person.
-// Se comprueba una única flecha desde la entidad 
-// hija hacia la entidad padre.
+// La jerarquía tiene una única subclase, por lo que
+// solo puede declararse como partial.
 entity Person {
     person_id: INT key
     name: VARCHAR(255)
 }
 
-entity Employee extends Person {
-    employee_id: INT key
+hierarchy h_person Person partial
+
+entity Employee extends h_person {
+    person_id: INT key
     salary: DECIMAL
 }
 
 
 // Ejemplo 2: varias entidades heredan del mismo padre
 // Car y Motorcycle son especializaciones de Vehicle.
-// Se comprueba que varias entidades hijas puedan apuntar a 
-// una misma entidad padre.
+// Se comprueba que varias entidades hijas pertenezcan
+// a una misma jerarquía.
 entity Vehicle {
     vehicle_id: INT key
     brand: VARCHAR(255)
 }
 
-entity Car extends Vehicle {
-    car_id: INT key
+hierarchy h_vehicle Vehicle partial disjoint
+
+entity Car extends h_vehicle {
+    vehicle_id: INT key
     doors: INT
 }
 
-entity Motorcycle extends Vehicle {
-    motorcycle_id: INT key
+entity Motorcycle extends h_vehicle {
+    vehicle_id: INT key
     engine_capacity: INT
 }
 
 
 // Ejemplo 3: herencia en varios niveles
-// PremiumAccount hereda de Account.
-// BusinessAccount hereda de PremiumAccount.
-// Se comprueba una cadena de herencia formada por varios 
-// niveles.
+// PremiumAccount pertenece a una jerarquía cuya base es Account.
+// PremiumAccount actúa a su vez como base de otra jerarquía
+// a la que pertenece BusinessAccount.
+// Se comprueba una cadena de herencia formada por varios niveles.
 entity Account {
     account_id: INT key
     username: VARCHAR(255)
 }
 
-entity PremiumAccount extends Account {
-    premium_account_id: INT key
+hierarchy h_account Account partial
+
+entity PremiumAccount extends h_account {
+    account_id: INT key
     subscription_date: DATE
 }
 
-entity BusinessAccount extends PremiumAccount {
-    business_account_id: INT key
+hierarchy h_premium_account PremiumAccount partial
+
+entity BusinessAccount extends h_premium_account {
+    account_id: INT key
     company_name: VARCHAR(255)
 }
 
 
 // Ejemplo 4: herencia junto a una relación normal
-// Employee hereda de Person y Person participa en la 
-// relación Places.
-// Se comprueba que las flechas de herencia se distingan de 
+// Employee pertenece a la jerarquía de Person y Person participa
+// en la relación Places.
+// Se comprueba que las flechas de herencia se distingan de
 // las relaciones normales.
 entity Order {
     order_id: INT key

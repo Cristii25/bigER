@@ -1,0 +1,112 @@
+erdiagram ComplexHierarchyValidation
+
+// ==================================================
+// Ejemplo complejo de jerarquías
+//
+// Este modelo comprueba la combinación de:
+// - jerarquías multinivel,
+// - varias jerarquías con una misma entidad base,
+// - entidades que son subclases de una jerarquía y,
+//   al mismo tiempo, base de otras jerarquías.
+// ==================================================
+
+
+// ==================================================
+// Nivel 1:
+// Persona_UEX se especializa en Estudiante y Empleado.
+// ==================================================
+
+entity Persona_UEX {
+    dni: VARCHAR(20) key
+}
+
+hierarchy h_persona Persona_UEX total overlapping
+
+entity Estudiante extends h_persona {
+    dni: VARCHAR(20) key
+}
+
+entity Empleado extends h_persona {
+    dni: VARCHAR(20) key
+}
+
+
+// ==================================================
+// Nivel 2 - Estudiante:
+// Estudiante es subclase de h_persona y, a su vez,
+// actúa como base de una nueva jerarquía.
+// ==================================================
+
+hierarchy h_estudiante Estudiante partial
+
+entity Estudiante_Politecnica extends h_estudiante {
+    dni: VARCHAR(20) key
+}
+
+
+// ==================================================
+// Nivel 3 - Estudiante_Politecnica:
+//
+// La misma entidad es base simultáneamente de dos
+// jerarquías independientes:
+// - h_edad
+// - h_titulacion
+// ==================================================
+
+hierarchy h_edad Estudiante_Politecnica total disjoint
+
+entity Menor_De_Edad extends h_edad {
+    dni: VARCHAR(20) key
+}
+
+entity Mayor_De_Edad extends h_edad {
+    dni: VARCHAR(20) key
+}
+
+
+hierarchy h_titulacion Estudiante_Politecnica partial overlapping
+
+entity Estudiante_Informatica extends h_titulacion {
+    dni: VARCHAR(20) key
+}
+
+entity Estudiante_Civil extends h_titulacion {
+    dni: VARCHAR(20) key
+}
+
+entity Estudiante_Edificacion extends h_titulacion {
+    dni: VARCHAR(20) key
+}
+
+
+// ==================================================
+// Nivel 2 - Empleado:
+// Empleado es subclase de h_persona y también
+// actúa como base de otra jerarquía.
+// ==================================================
+
+hierarchy h_empleado Empleado total overlapping
+
+entity PTGAS extends h_empleado {
+    dni: VARCHAR(20) key
+}
+
+entity Docente extends h_empleado {
+    dni: VARCHAR(20) key
+}
+
+
+// ==================================================
+// Nivel 3 - Docente:
+// Docente vuelve a actuar como base de otra jerarquía.
+// ==================================================
+
+hierarchy h_docente Docente partial disjoint
+
+entity Catedratico extends h_docente {
+    dni: VARCHAR(20) key
+}
+
+entity Titular extends h_docente {
+    dni: VARCHAR(20) key
+}

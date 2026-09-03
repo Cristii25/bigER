@@ -99,6 +99,7 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute EntityRelationship.ecore#//DataType/d"/>
     </genClasses>
     <genClasses ecoreClass="EntityRelationship.ecore#//Hierarchy">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute EntityRelationship.ecore#//Hierarchy/name"/>
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference EntityRelationship.ecore#//Hierarchy/base"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute EntityRelationship.ecore#//Hierarchy/completeness"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute EntityRelationship.ecore#//Hierarchy/constraint"/>

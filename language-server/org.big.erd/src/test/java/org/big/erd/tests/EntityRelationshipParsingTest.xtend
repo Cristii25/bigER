@@ -96,6 +96,46 @@ class EntityRelationshipParsingTest {
 		Assertions.assertEquals(1, model.entities.filter[!it.weak].size)
 		Assertions.assertEquals(true, model.relationships.get(0).isWeak)
 	}
+
+	@Test
+	def void testAssociativeEntity() {
+		val model = parseHelper.parse('''
+			erdiagram TestModel
+
+			entity Student {
+				id key
+			}
+
+			associative entity Enrollment {
+			}
+		''')
+
+		checkModel(model)
+
+		val enrollment = model.entities.filter[
+			it.name.equals("Enrollment")
+		].get(0)
+
+		Assertions.assertTrue(enrollment.associative)
+		Assertions.assertFalse(enrollment.weak)
+		Assertions.assertTrue(enrollment.attributes.empty)
+	}
+
+	@Test
+	def void testEntityCannotBeWeakAndAssociative() {
+		val model = parseHelper.parse('''
+			erdiagram TestModel
+
+			weak associative entity InvalidEntity {
+			}
+		''')
+
+		Assertions.assertNotNull(model)
+		Assertions.assertFalse(
+			model.eResource.errors.empty,
+			'''Expected a syntax error when combining weak and associative modifiers'''
+		)
+	}
 	
 	@Test
 	def void testInheritance() {
@@ -106,8 +146,10 @@ class EntityRelationshipParsingTest {
 				id key
 			}
 
-			entity Employee extends Person {
-				employee_id key
+			hierarchy h_person Person partial
+
+			entity Employee extends h_person {
+				id key
 			}
 		''')
 
@@ -115,8 +157,10 @@ class EntityRelationshipParsingTest {
 
 		val person = model.entities.filter[it.name.equals("Person")].get(0)
 		val employee = model.entities.filter[it.name.equals("Employee")].get(0)
+		val hierarchy = model.hierarchies.filter[it.name.equals("h_person")].get(0)
 
-		Assertions.assertEquals(person, employee.extends)
+		Assertions.assertEquals(hierarchy, employee.extends)
+		Assertions.assertEquals(person, employee.extends.base)
 	}
 
 	@Test
@@ -129,15 +173,15 @@ class EntityRelationshipParsingTest {
 				id key
 			}
 
-			entity Employee extends Person {
-				employee_id key
+			hierarchy h_person Person total disjoint
+
+			entity Employee extends h_person {
+				id key
 			}
 
-			entity Customer extends Person {
-				customer_id key
+			entity Customer extends h_person {
+				id key
 			}
-
-			hierarchy Person total disjoint
 
 
 			// total + overlapping
@@ -145,15 +189,15 @@ class EntityRelationshipParsingTest {
 				id key
 			}
 
-			entity Car extends Vehicle {
-				car_id key
+			hierarchy h_vehicle Vehicle total overlapping
+
+			entity Car extends h_vehicle {
+				id key
 			}
 
-			entity AmphibiousVehicle extends Vehicle {
-				amphibious_id key
+			entity AmphibiousVehicle extends h_vehicle {
+				id key
 			}
-
-			hierarchy Vehicle total overlapping
 
 
 			// partial + disjoint
@@ -161,15 +205,15 @@ class EntityRelationshipParsingTest {
 				id key
 			}
 
-			entity PersonalAccount extends Account {
-				personal_id key
+			hierarchy h_account Account partial disjoint
+
+			entity PersonalAccount extends h_account {
+				id key
 			}
 
-			entity BusinessAccount extends Account {
-				business_id key
+			entity BusinessAccount extends h_account {
+				id key
 			}
-
-			hierarchy Account partial disjoint
 
 
 			// partial + overlapping
@@ -177,15 +221,15 @@ class EntityRelationshipParsingTest {
 				id key
 			}
 
-			entity Developer extends Worker {
-				developer_id key
+			hierarchy h_worker Worker partial overlapping
+
+			entity Developer extends h_worker {
+				id key
 			}
 
-			entity Manager extends Worker {
-				manager_id key
+			entity Manager extends h_worker {
+				id key
 			}
-
-			hierarchy Worker partial overlapping
 		''')
 
 		checkModel(model)
@@ -193,26 +237,31 @@ class EntityRelationshipParsingTest {
 		Assertions.assertEquals(4, model.hierarchies.size)
 
 		val personHierarchy = model.hierarchies.filter[
-			it.base.name.equals("Person")
+			it.name.equals("h_person")
 		].get(0)
 
 		val vehicleHierarchy = model.hierarchies.filter[
-			it.base.name.equals("Vehicle")
+			it.name.equals("h_vehicle")
 		].get(0)
 
 		val accountHierarchy = model.hierarchies.filter[
-			it.base.name.equals("Account")
+			it.name.equals("h_account")
 		].get(0)
 
 		val workerHierarchy = model.hierarchies.filter[
-			it.base.name.equals("Worker")
+			it.name.equals("h_worker")
 		].get(0)
+
+		Assertions.assertEquals(
+			"Person",
+			personHierarchy.base.name
+		)
 
 		Assertions.assertEquals(
 			HierarchyCompleteness.TOTAL,
 			personHierarchy.completeness
 		)
-		
+
 		Assertions.assertEquals(
 			HierarchyConstraint.DISJOINT,
 			personHierarchy.constraint
@@ -222,6 +271,7 @@ class EntityRelationshipParsingTest {
 			HierarchyCompleteness.TOTAL,
 			vehicleHierarchy.completeness
 		)
+
 		Assertions.assertEquals(
 			HierarchyConstraint.OVERLAPPING,
 			vehicleHierarchy.constraint
@@ -231,6 +281,7 @@ class EntityRelationshipParsingTest {
 			HierarchyCompleteness.PARTIAL,
 			accountHierarchy.completeness
 		)
+
 		Assertions.assertEquals(
 			HierarchyConstraint.DISJOINT,
 			accountHierarchy.constraint
@@ -240,6 +291,7 @@ class EntityRelationshipParsingTest {
 			HierarchyCompleteness.PARTIAL,
 			workerHierarchy.completeness
 		)
+
 		Assertions.assertEquals(
 			HierarchyConstraint.OVERLAPPING,
 			workerHierarchy.constraint

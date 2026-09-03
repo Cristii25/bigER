@@ -56,8 +56,8 @@ class Neo4jGenerator implements IErGenerator {
 			}
 			attributes += attr
 		}
-		if (entity.extends !== null) {
-			attributes.addAll(getAllAttrWithExtendsWithNamePrefix(entity.extends))
+		if (entity.extends !== null && entity.extends.base !== null) {
+			attributes.addAll(getAllAttrWithExtendsWithNamePrefix(entity.extends.base))
 		}
 		return attributes
 	}
@@ -65,8 +65,8 @@ class Neo4jGenerator implements IErGenerator {
 	private def Iterable<Attribute> getAllAttrWithExtends(Entity entity) {
 		val attributes = newHashSet
 		attributes += entity.attributes
-		if (entity.extends !== null) {
-			attributes.addAll(getAllAttrWithExtendsWithNamePrefix(entity.extends))
+		if (entity.extends !== null && entity.extends.base !== null) {
+			attributes.addAll(getAllAttrWithExtendsWithNamePrefix(entity.extends.base))
 		}
 		return attributes
 	}
@@ -85,7 +85,7 @@ class Neo4jGenerator implements IErGenerator {
 
 	private def toTableExtends(Entity entity){
 		return '''
-			«IF entity?.extends !== null»CREATE («entity?.name»)-[«entity?.name»_IS_A:«entity?.name»_IS_A]->(«entity.extends?.name»)«'\n'»«ENDIF»
+			«IF entity?.extends !== null && entity.extends.base !== null»CREATE («entity?.name»)-[«entity?.name»_IS_A:«entity?.name»_IS_A]->(«entity.extends.base.name»)«'\n'»«ENDIF»
 		'''
 	}
 	

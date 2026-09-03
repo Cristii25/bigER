@@ -1,6 +1,10 @@
 erdiagram AssociativeEntityValidation
 
-// Entidades estándar utilizadas como referencia
+// ============================================================
+// VALID CASES
+// ============================================================
+
+// Standard entities used as reference
 entity Student {
     id: INT key
     name: STRING
@@ -11,15 +15,93 @@ entity Course {
     name: STRING
 }
 
-// Entidad asociativa definida explícitamente 
-// mediante el modificador associative
+// An associative entity can contain normal attributes,
+// but it cannot declare key or partial-key attributes.
 associative entity Enrollment {
-    enrollment_id: INT key
     date: DATE
 }
 
-// Entidad débil para comprobar que la 
-// sintaxis existente sigue siendo válida
+// An associative entity can also have an empty body.
+// Its identification will come from the entities it associates.
+associative entity EmptyEnrollment {
+}
+
+// Weak entity to verify that the existing syntax
+// continues to work correctly.
 weak entity WeakEntity {
     code: INT partial-key
 }
+
+
+// ============================================================
+// INVALID CASES
+// Uncomment each case separately to test the validation error.
+// ============================================================
+
+
+// ------------------------------------------------------------
+// INVALID_ASSOCIATIVE_KEY
+// An associative entity cannot declare a primary key.
+//
+// Expected error:
+// "Associative entities cannot declare key or partial-key attributes"
+//
+// Error code:
+// invalidAssociativeKey
+// ------------------------------------------------------------
+//
+// associative entity EnrollmentWithKey {
+//     enrollment_id: INT key
+//     date: DATE
+// }
+
+
+// ------------------------------------------------------------
+// INVALID_ASSOCIATIVE_KEY
+// An associative entity cannot declare a partial key.
+//
+// Expected error:
+// "Associative entities cannot declare key or partial-key attributes"
+//
+// Error code:
+// invalidAssociativeKey
+// ------------------------------------------------------------
+//
+// associative entity EnrollmentWithPartialKey {
+//     enrollment_id: INT partial-key
+//     date: DATE
+// }
+
+
+// ------------------------------------------------------------
+// INVALID_HIERARCHY_BASE
+// An associative entity cannot be used as the base
+// of a hierarchy.
+//
+// Expected error:
+// "Associative entity 'AssociativeBase' cannot be the base of a hierarchy"
+//
+// Error code:
+// invalidHierarchyBase
+// ------------------------------------------------------------
+//
+// associative entity AssociativeBase {
+//     description: STRING
+// }
+//
+// hierarchy h_associative AssociativeBase partial
+//
+// entity AssociativeChild extends h_associative {
+// }
+
+
+// ------------------------------------------------------------
+// INVALID ENTITY MODIFIER COMBINATION
+// An entity cannot be weak and associative at the same time.
+//
+// This is rejected directly by the grammar, therefore it does
+// not produce a custom validator error code.
+// ------------------------------------------------------------
+//
+// weak associative entity InvalidEntity {
+// }
